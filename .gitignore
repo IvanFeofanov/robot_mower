@@ -1,0 +1,14 @@
+*.o
+*.o.d
+*.swp
+*.sw?
+*.lst
+*.elf
+*.hex
+*.lss
+*.map
+*.sym
+*.eep
+vims
+/.dep
+
