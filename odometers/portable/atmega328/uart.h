@@ -19,7 +19,7 @@ enum UART_SPEED_MODE
 {
     UART_NORMAL_SPEED_MODE,
     UART_DOUBLE_SPEED_MODE
-}
+};
 
 //baund rate
 // template<UART_BAUND_RATE BAUND_RATE, UART_SPEED_MODE SPEED_MODE>
@@ -51,7 +51,7 @@ public:
         //baund rate
         uint16_t ubrr = 0;
 
-        if(SPEED_MODE = UART_NORMAL_SPEED_MODE){
+        if(SPEED_MODE == UART_NORMAL_SPEED_MODE){
             UCSR0A &= ~(1<<U2X0);
             ubrr = F_CPU / (16 * BAUND_RATE) - 1;
         }else{
@@ -89,11 +89,23 @@ public:
     // static uint16_t read(void* buffer, uint16_t length);
     static char read()
     {
-        // cli();
+        cli();
         // char data = receive_buffer_[receive_buffer_index_];
         // receive_buffer_index_--;
-        // sei();
+        sei();
 
+    }
+
+    static void receptionComplate()
+    {
+    }
+
+    static void dataRegisterEmpty()
+    {
+    }
+
+    static void transferComplate()
+    {
     }
 
 private:
@@ -102,6 +114,28 @@ private:
     static char*       transfer_buffer_ptr_;
 
 };
+
+template<
+    UART_BAUND_RATE BAUND_RATE,
+    UART_SPEED_MODE SPEED_MODE,
+    uint16_t RECEIVE_BUFFER_SIZE
+    >
+uint16_t Uart<BAUND_RATE, SPEED_MODE, RECEIVE_BUFFER_SIZE>::receive_buffer_index_;
+
+template<
+    UART_BAUND_RATE BAUND_RATE,
+    UART_SPEED_MODE SPEED_MODE,
+    uint16_t        RECEIVE_BUFFER_SIZE
+    >
+char Uart<BAUND_RATE, SPEED_MODE, RECEIVE_BUFFER_SIZE>::receive_buffer_[RECEIVE_BUFFER_SIZE];
+
+template<
+    UART_BAUND_RATE BAUND_RATE,
+    UART_SPEED_MODE SPEED_MODE,
+    uint16_t        RECEIVE_BUFFER_SIZE
+    >
+char* Uart<BAUND_RATE, SPEED_MODE, RECEIVE_BUFFER_SIZE>::transfer_buffer_ptr_;
+
 
 typedef Uart<UBR_9600, UART_NORMAL_SPEED_MODE, 128> Uart9600;
 

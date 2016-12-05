@@ -7,10 +7,11 @@ extern "C"
 #include <string.h>
 }
 
+#include "portable/atmega328/uart.h"
 
 void setup()
 {
-
+    Uart9600::init();
 }
 
 void loop()
