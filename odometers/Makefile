@@ -84,7 +84,7 @@ SRC =
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
-CPPSRC = ./main/$(TARGET).cpp
+CPPSRC = ./main/$(TARGET).cpp ./portable/atmega328/uart.cpp
 
 
 # List Assembler source files here.
@@ -114,7 +114,7 @@ DEBUG = dwarf-2
 #     Each directory must be seperated by a space.
 #     Use forward slashes for directory separators.
 #     For a directory that has spaces, enclose it in quotes.
-EXTRAINCDIRS = ./ ./main
+EXTRAINCDIRS = ./ ./include
 
 
 # Compiler flag to set the C Standard level.
