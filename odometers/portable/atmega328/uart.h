@@ -33,7 +33,7 @@ template<
 class Uart
 {
 public:
-    static void begin()
+    static void init()
     {
         //baund rate
         uint16_t ubrr = 0;
@@ -116,6 +116,12 @@ public:
         }
 
         return length;
+    }
+
+    static void flush()
+    {
+        DisableInterrupt at;
+        receive_buffer_.flush();
     }
 
 public:

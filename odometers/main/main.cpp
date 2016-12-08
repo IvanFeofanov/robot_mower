@@ -8,28 +8,22 @@ extern "C"
 }
 
 #include "portable/atmega328/uart.h"
+#include "portable/atmega328/drive_motors.h"
+#include "fsm/terminal.h"
 
-char buffer []  = "hello\n";
+Terminal<Serial, DriveMotors> terminal;
 
 void setup()
 {
-    DDRB = (1<<5);
-    Serial::begin();
+    Serial::init();
+    DriveMotors::init();
+    DDRB |= (1<<5);
     sei();
-
-    _delay_ms(500);
-    Serial::write(buffer, strlen(buffer));
 }
 
 void loop()
 {
-    int length = Serial::available();
-
-    if(length > 0){
-        Serial::read(buffer, length);
-        while(!Serial::isWriten());
-        Serial::write(buffer, length);
-    }
+    terminal.exec();
 }
 
 int main()
