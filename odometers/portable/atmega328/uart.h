@@ -60,9 +60,9 @@ public:
         transfer_buffer_index_  = 0;
     }
 
-    static bool write(void* buffer, uint16_t length)
+    static bool write(const void* buffer, uint16_t length)
     {
-        DisableInterrupt at;
+        DisableInterrupt di;
 
         if(length == 0 || !isWriten())
             return false;
@@ -79,12 +79,13 @@ public:
 
     static bool isWriten()
     {
+        DisableInterrupt di;
         return transfer_buffer_length_ == 0;
     }
 
     static uint16_t available()
     {
-        DisableInterrupt at;
+        DisableInterrupt di;
 
         uint16_t count = receive_buffer_.count();
         return count;
@@ -92,7 +93,7 @@ public:
 
     static char read()
     {
-        DisableInterrupt at;
+        DisableInterrupt di;
 
         char value = 0;
         bool is_ok = receive_buffer_.take(&value);
@@ -104,7 +105,7 @@ public:
 
     static uint16_t read(void* buffer, uint16_t length)
     {
-        DisableInterrupt at;
+        DisableInterrupt di;
 
         char value;
         for(uint16_t i = 0; i < length; i++){
@@ -120,7 +121,7 @@ public:
 
     static void flush()
     {
-        DisableInterrupt at;
+        DisableInterrupt di;
         receive_buffer_.flush();
     }
 

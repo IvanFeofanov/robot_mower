@@ -3,6 +3,8 @@
 
 #include <string.h>
 
+volatile extern uint32_t cntr;
+
 template <
     typename Serial,
     typename Drive
@@ -17,7 +19,9 @@ private:
     enum {
         wait_begin_symbol,
         get_byte,
-        parsing
+        parsing,
+        send_counter,
+        wait_transfering
     };
 
     enum { buffer_size_ = 128 };
@@ -41,11 +45,9 @@ void Terminal<Serial, Drive>::exec()
     {
     case wait_begin_symbol:
         if(Serial::available() > 0){
-            PORTB |= (1<<5);
             char ch = Serial::read();
             if(ch == ':'){
                 state_ = get_byte;
-                PORTB &= ~(1<<5);
             }
         }
         break;
@@ -64,10 +66,26 @@ void Terminal<Serial, Drive>::exec()
         break;
 
     case parsing:
-        if(sscanf(buffer_, "pwm=%d", &pwm_)){
-            string_length_ = 0;
-            state_ = wait_begin_symbol;
+        if(sscanf(buffer_, "%d", &pwm_)){
             Drive::setPwm(pwm_);
+        }
+
+        string_length_ = 0;
+        state_ = send_counter;
+
+        break;
+
+    case send_counter:
+        if(Serial::isWriten()){
+            sprintf(buffer_, "counter=%d\n", DriveMotors::getCounter());
+            Serial::write(buffer_, strlen(buffer_));
+            state_ = wait_transfering;
+        }
+        break;
+
+    case wait_transfering:
+        if(Serial::isWriten()){
+            state_ = wait_begin_symbol;
         }
         break;
     }

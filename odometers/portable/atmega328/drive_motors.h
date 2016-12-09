@@ -17,22 +17,29 @@ public:
         //ports
         DDRD |= (1<<7);
         DDRB |= (1<<0) | (1<<3);
-        setDirection(-1);
 
         //pwm
         TCCR2A |= (1<<COM2A1) | (1<<WGM21) | (1<<WGM20); //Fast pwm
         TCCR2B |= (1<<CS20); //clk = F_CPU
         OCR2A = 0;
 
+        //external interrupt
+        EICRA |= (1<<ISC00);
+        EIMSK |= (1<<INT0);
+
+        setDirection(-1);
+
+        counter_ = 0;
     }
 
-    static uint16_t getCounter()
+    static uint32_t getCounter()
     {
-        DisableInterrupt at;
+        DisableInterrupt di;
 
-        uint16_t counter = counter_;
+        uint32_t tmp = counter_;
         counter_ = 0;
-        return counter;
+
+        return tmp;
     }
 
     static void resetCounter()
@@ -61,14 +68,14 @@ public:
     }
 
 public:
-    static void odometerInterrupt()
+    volatile static void odometerInterrupt()
     {
+        counter_++;
     }
 
 private:
-    static uint16_t counter_;
+    volatile static uint32_t counter_;
 };
 
-uint16_t DriveMotors::counter_;
 
 #endif

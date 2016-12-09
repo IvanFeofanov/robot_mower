@@ -84,7 +84,10 @@ SRC =
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
-CPPSRC = ./main/$(TARGET).cpp ./portable/atmega328/uart.cpp
+CPPSRC = ./main/$(TARGET).cpp \
+		 ./portable/atmega328/uart.cpp \
+		 ./portable/atmega328/drive_motors.cpp \
+		 ./portable/atmega328/time.cpp
 
 
 # List Assembler source files here.
