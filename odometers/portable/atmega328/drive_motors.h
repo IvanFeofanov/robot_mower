@@ -52,6 +52,11 @@ public:
         OCR2A = value;
     }
 
+    static uint8_t getPwm()
+    {
+        return OCR2A;
+    }
+
     static void setDirection(int8_t sig)
     {
         //TODO вынести в порты в параметры шаблона

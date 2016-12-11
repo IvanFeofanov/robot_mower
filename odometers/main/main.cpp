@@ -13,7 +13,7 @@ extern "C"
 
 #include "fsm/terminal.h"
 
-Terminal<Serial, DriveMotors> terminal;
+Terminal<Serial, Time, DriveMotors> terminal;
 
 // static uint32_t last_time;
 

@@ -2,11 +2,11 @@
 #define TERMINAL_H
 
 #include <string.h>
-
-volatile extern uint32_t cntr;
+#include <../utils/pid.h>
 
 template <
     typename Serial,
+    typename Time,
     typename Drive
     >
 class Terminal
@@ -29,18 +29,44 @@ private:
     uint16_t string_length_;
 
     uint8_t pwm_;
+
+    uint32_t last_time_;
+    uint16_t rps_;
+    uint16_t speed_;
+
+    Pid pid_;
 };
 
-template<typename Serial, typename Drive>
-void Terminal<Serial, Drive>::init()
+template<typename Serial, typename Time, typename Drive>
+void Terminal<Serial, Time, Drive>::init()
 {
     state_ = 0;
     string_length_ = 0;
+    last_time_ = 0;
+    rps_ = 0;
+    speed_ = 0;
 }
 
-template<typename Serial, typename Drive>
-void Terminal<Serial, Drive>::exec()
+template<typename Serial, typename Time, typename Drive>
+void Terminal<Serial, Time, Drive>::exec()
 {
+    if(Time::now() - last_time_ >= 100)
+    {
+        rps_ = DriveMotors::getCounter()+1;
+        double value = pid_.update((double)(speed_), (double)(rps_));
+        uint8_t pwm;
+        if(value < 0.0){
+            pwm = 0;
+        }else if(value > 255.0){
+            pwm = 255;
+        }else{
+            pwm = (uint8_t)(value);
+        }
+
+        Drive::setPwm(pwm);
+        last_time_ = Time::now();
+    }
+
     switch(state_)
     {
     case wait_begin_symbol:
@@ -66,7 +92,7 @@ void Terminal<Serial, Drive>::exec()
         break;
 
     case parsing:
-        if(sscanf(buffer_, "%d", &pwm_)){
+        if(sscanf(buffer_, "%d", &speed_)){
             Drive::setPwm(pwm_);
         }
 
@@ -77,7 +103,7 @@ void Terminal<Serial, Drive>::exec()
 
     case send_counter:
         if(Serial::isWriten()){
-            sprintf(buffer_, "counter=%d\n", DriveMotors::getCounter());
+            sprintf(buffer_, "counter=%d\n", rps_);
             Serial::write(buffer_, strlen(buffer_));
             state_ = wait_transfering;
         }
