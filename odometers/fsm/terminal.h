@@ -2,18 +2,25 @@
 #define TERMINAL_H
 
 #include <string.h>
-#include <../utils/pid.h>
+
+#include "process.h"
+
+#include "messages.h"
+
+#include "../utils/pid.h"
 
 template <
     typename Serial,
     typename Time,
     typename Drive
     >
-class Terminal
+class Terminal : public Process
 {
 public:
     void init();
-    void exec();
+    void run();
+    void handleMessages();
+
 private:
     uint8_t state_;
     enum {
@@ -48,7 +55,7 @@ void Terminal<Serial, Time, Drive>::init()
 }
 
 template<typename Serial, typename Time, typename Drive>
-void Terminal<Serial, Time, Drive>::exec()
+void Terminal<Serial, Time, Drive>::run()
 {
     if(Time::now() - last_time_ >= 100)
     {
@@ -94,6 +101,9 @@ void Terminal<Serial, Time, Drive>::exec()
     case parsing:
         if(sscanf(buffer_, "%d", &speed_)){
             Drive::setPwm(pwm_);
+            if(speed_ > 20){
+                MsgHandler::send(0, 0);
+            }
         }
 
         string_length_ = 0;
@@ -115,6 +125,11 @@ void Terminal<Serial, Time, Drive>::exec()
         }
         break;
     }
+}
+
+template<typename Serial, typename Time, typename Drive>
+void Terminal<Serial, Time, Drive>::handleMessages()
+{
 }
 
 #endif

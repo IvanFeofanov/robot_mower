@@ -49,7 +49,7 @@ public:
         return true;
     }
 
-    bool is_empty()
+    bool isEmpty()
     {
         return tail_ == head_;
     }

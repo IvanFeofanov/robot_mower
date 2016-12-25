@@ -7,43 +7,58 @@ extern "C"
 #include <string.h>
 }
 
+#include "process.h"
+#include "messages.h"
+
 #include "portable/atmega328/uart.h"
 #include "portable/atmega328/drive_motors.h"
 #include "portable/atmega328/time.h"
 
 #include "fsm/terminal.h"
+#include "fsm/gears.h"
 
+//messages
+enum{
+    UP
+};
+
+//process
 Terminal<Serial, Time, DriveMotors> terminal;
+Gears<DriveMotors, UP> gears;
 
-// static uint32_t last_time;
-
-void setup()
+inline void hardwareInit()
 {
     Serial::init();
     DriveMotors::init();
     Time::init();
 
     DDRB |= (1<<5); //led
-    // last_time = 0;
 
     sei();
 }
 
+inline void fsmInit()
+{
+    terminal.init();
+    gears.init();
+}
+
 void loop()
 {
-    terminal.exec();
-    // if(Time::now() - last_time >= 1000)
-    // {
-    //     PORTB ^= (1<<5);
-    //     last_time = Time::now();
-    // }
+    terminal.run();
+    gears.run();
 }
 
 int main()
 {
-    setup();
-    while(true)
+    hardwareInit();
+    fsmInit();
+    MsgHandler::init();
+
+    while(true){
         loop();
+        MsgHandler::run();
+    }
 
     return 0;
 }
