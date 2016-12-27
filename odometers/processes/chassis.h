@@ -1,7 +1,10 @@
 #ifndef CHASSIS_H
 #define CHASSIS_H
 
+#include "process.h"
 #include "messages.h"
+
+#include "../utils/pid.h"
 
 template<
     typename Drive,
@@ -13,6 +16,7 @@ public:
     void init()
     {
     }
+
     void run()
     {
         if(MsgHandler::get(VECTOR_MSG, 0))
@@ -25,6 +29,10 @@ public:
     {
 
     }
+
+private:
+    Pid regulator_;
+
 };
 
 #endif
