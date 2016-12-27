@@ -15,7 +15,7 @@ extern "C"
 #include "portable/atmega328/time.h"
 
 #include "fsm/terminal.h"
-#include "fsm/gears.h"
+#include "fsm/chassis.h"
 
 //messages
 enum{
@@ -24,7 +24,7 @@ enum{
 
 //process
 Terminal<Serial, Time, DriveMotors> terminal;
-Gears<DriveMotors, UP> gears;
+Chassis<DriveMotors, UP> chassis;
 
 inline void hardwareInit()
 {
@@ -40,19 +40,20 @@ inline void hardwareInit()
 inline void fsmInit()
 {
     terminal.init();
-    gears.init();
+    chassis.init();
 }
 
 void loop()
 {
     terminal.run();
-    gears.run();
+    chassis.run();
 }
 
 int main()
 {
     hardwareInit();
     fsmInit();
+
     MsgHandler::init();
 
     while(true){
