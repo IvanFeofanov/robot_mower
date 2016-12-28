@@ -14,7 +14,9 @@
 template<
     typename Drive,
     typename Odometers,
-    uint16_t COMMAND_CHANGED
+    uint16_t COMMAND_CHANGED,
+    uint16_t PID_COEFF_CHANGED,
+    uint16_t SPEED_OBTAINED
     >
 class Chassis: public Process
 {
@@ -32,12 +34,15 @@ public:
         //update speed
         if(Time::now() - last_time_ >= 100)
         {
-            float left_rps_feedback = (float)Odometers::getLeft();
-            float output = regulator_.update(left_rps_input_, left_rps_feedback);
+            left_rps_feedback_ = (float)Odometers::getLeft();
+            float output = regulator_.update(left_rps_input_, left_rps_feedback_);
             Drive::setPwm((uint8_t)(output));
 
             last_time_ = Time::now();
         }
+
+        //send speed
+        Messages::send(SPEED_OBTAINED, &left_rps_feedback_);
 
     }
 
@@ -61,15 +66,21 @@ public:
 
     void setPidCoeff()
     {
-    //
+        Pid* pid;
+        if(Messages::get(PID_COEFF_CHANGED, (void**)(&pid))){
+            regulator_ = *pid;
+        }
     }
+
 
 private:
     Pid regulator_;
     uint32_t last_time_;
 
     float left_rps_input_;
+    float left_rps_feedback_;
     float right_rps_input_;
+    float right_rps_feedback_;
 
 
 };

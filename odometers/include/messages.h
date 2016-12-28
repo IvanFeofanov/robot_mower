@@ -62,7 +62,7 @@ public:
 
     static bool get(uint16_t msg_id, void** param_ptr)
     {
-        if(messages_[msg_id].state == Msg::INSTALLED){
+        if(messages_[msg_id].state == Msg::ACTIVE){
             *param_ptr = messages_[msg_id].param_ptr;
             messages_[msg_id].state = Msg::INACTIVE;
             return true;

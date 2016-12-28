@@ -14,6 +14,21 @@ Pid::Pid()
     min_value_  = 0;
 }
 
+Pid::Pid(float i_max, float i_min, float p, float i, float d)
+{
+    i_state_    = 0;
+    i_max_      = i_max;
+    i_min_      = i_min;
+    i_gain_     = i;
+
+    p_gain_     = p;
+    d_gain_     = d;
+
+    max_value_  = 255;
+    min_value_  = 0;
+}
+
+
 float Pid::update(float x, float y)
 {
     float error = x - y;

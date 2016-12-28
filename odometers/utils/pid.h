@@ -5,12 +5,14 @@ class Pid
 {
 public:
     Pid();
+    Pid(float i_max, float i_min, float p, float i, float d);
     float update(float x, float y);
 
+
 private:
-    float i_state_;
     float i_max_;
     float i_min_;
+    float i_state_;
     float i_gain_;
 
     float p_gain_;

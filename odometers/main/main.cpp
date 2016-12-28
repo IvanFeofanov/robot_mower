@@ -20,12 +20,16 @@ extern "C"
 
 //messages
 enum{
-    COMMAND_CHANGED
+    COMMAND_CHANGED,
+    PID_COEFF_CHANGED,
+    SPEED_OBTAINED
 };
 
 //process
-Terminal<Serial, Time, COMMAND_CHANGED> terminal;
-Chassis<DriveMotors, Odometers, COMMAND_CHANGED> chassis;
+Terminal<Serial, Time,
+        COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> terminal;
+Chassis<DriveMotors, Odometers,
+        COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> chassis;
 
 Process* processes []  = {
     &terminal,
