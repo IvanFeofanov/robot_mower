@@ -5,15 +5,19 @@ class Pid
 {
 public:
     Pid();
-    double update(double x, double y);
+    float update(float x, float y);
 
 private:
-    double i_state_;
-    double i_max_;
-    double i_min_;
-    double p_gain_;
-    double i_gain_;
-    double d_gain_;
+    float i_state_;
+    float i_max_;
+    float i_min_;
+    float i_gain_;
+
+    float p_gain_;
+    float d_gain_;
+
+    float max_value_;
+    float min_value_;
 };
 
 #endif

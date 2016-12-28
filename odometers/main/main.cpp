@@ -12,24 +12,31 @@ extern "C"
 
 #include "portable/atmega328/uart.h"
 #include "portable/atmega328/drive_motors.h"
+#include "portable/atmega328/odometers.h"
 #include "portable/atmega328/time.h"
 
-#include "fsm/terminal.h"
-#include "fsm/chassis.h"
+#include "processes/terminal.h"
+#include "processes/chassis.h"
 
 //messages
 enum{
-    UP
+    COMMAND_CHANGED
 };
 
 //process
-Terminal<Serial, Time, DriveMotors> terminal;
-Chassis<DriveMotors, UP> chassis;
+Terminal<Serial, Time, COMMAND_CHANGED> terminal;
+Chassis<DriveMotors, Odometers, COMMAND_CHANGED> chassis;
+
+// Process* processes []  = {
+    // &terminal,
+    // &chassis
+// };
 
 inline void hardwareInit()
 {
     Serial::init();
     DriveMotors::init();
+    Odometers::init();
     Time::init();
 
     DDRB |= (1<<5); //led
@@ -37,28 +44,32 @@ inline void hardwareInit()
     sei();
 }
 
-inline void fsmInit()
+inline void processesInit()
 {
     terminal.init();
     chassis.init();
+    // for(int i = 0; i < sizeof(processes) / sizeof(void*); i++)
+        // processes[i]->init();
 }
 
 void loop()
 {
+    terminal.handleMessages();
     terminal.run();
+    chassis.handleMessages();
     chassis.run();
 }
 
 int main()
 {
     hardwareInit();
-    fsmInit();
+    processesInit();
 
-    MsgHandler::init();
+    Messages::init();
 
     while(true){
         loop();
-        MsgHandler::run();
+        Messages::run();
     }
 
     return 0;

@@ -88,6 +88,7 @@ CPPSRC = ./main/$(TARGET).cpp \
 		 ./utils/pid.cpp \
 		 ./portable/atmega328/uart.cpp \
 		 ./portable/atmega328/drive_motors.cpp \
+		 ./portable/atmega328/odometers.cpp \
 		 ./portable/atmega328/time.cpp
 
 
@@ -118,7 +119,7 @@ DEBUG = dwarf-2
 #     Each directory must be seperated by a space.
 #     Use forward slashes for directory separators.
 #     For a directory that has spaces, enclose it in quotes.
-EXTRAINCDIRS = ./ ./include
+EXTRAINCDIRS = ./ ./include ./include/types
 
 
 # Compiler flag to set the C Standard level.

@@ -7,8 +7,6 @@ extern "C"
 #include <avr/interrupt.h>
 }
 
-#include "disable_interrupt.h"
-
 class DriveMotors
 {
 public:
@@ -23,28 +21,7 @@ public:
         TCCR2B |= (1<<CS20); //clk = F_CPU
         OCR2A = 0;
 
-        //external interrupt
-        EICRA |= (1<<ISC00);
-        EIMSK |= (1<<INT0);
-
-        setDirection(-1);
-
-        counter_ = 0;
-    }
-
-    static uint32_t getCounter()
-    {
-        DisableInterrupt di;
-
-        uint32_t tmp = counter_;
-        counter_ = 0;
-
-        return tmp;
-    }
-
-    static void resetCounter()
-    {
-        counter_ = 0;
+        setDirection(1);
     }
 
     static void setPwm(uint8_t value)
@@ -59,27 +36,28 @@ public:
 
     static void setDirection(int8_t sig)
     {
-        //TODO вынести в порты в параметры шаблона
+        //TODO вынести порты в параметры шаблона
         if(sig > 0){
+            //left
             PORTD &= ~(1<<7);
             PORTB |= (1<<0);
         }else if(sig < 0){
+            //right
             PORTD |= (1<<7);
             PORTB &= ~(1<<0);
         }else{
+            //stop
             PORTD &= ~(1<<7);
             PORTB &= ~(1<<0);
         }
     }
 
 public:
-    volatile static void odometerInterrupt()
-    {
-        counter_++;
-    }
-
-private:
-    volatile static uint32_t counter_;
+    enum {
+        RIGHT = -1,
+        STOP,
+        LEFT
+    };
 };
 
 

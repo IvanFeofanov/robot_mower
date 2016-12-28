@@ -1,20 +1,24 @@
 #include "pid.h"
 
-Pid::Pid() :
-    i_state_(0),
-    i_max_(50),
-    i_min_(-50),
-    p_gain_(5),
-    i_gain_(10),
-    d_gain_(0)
+Pid::Pid()
 {
+    i_state_    = 0;
+    i_max_      = 50;
+    i_min_      = -50;
+    i_gain_     = 10;
+
+    p_gain_     = 5;
+    d_gain_     = 0;
+
+    max_value_  = 255;
+    min_value_  = 0;
 }
 
-double Pid::update(double x, double y)
+float Pid::update(float x, float y)
 {
-    double error = x - y;
+    float error = x - y;
 
-    double p_value = p_gain_ * error;
+    float p_value = p_gain_ * error;
 
     i_state_ += error;
     if(i_state_ > i_max_){
@@ -23,9 +27,14 @@ double Pid::update(double x, double y)
         i_state_ = i_min_;
     }
 
-    double i_value = i_gain_ * i_state_;
+    float i_value = i_gain_ * i_state_;
 
-    double summ = p_value + i_value;
+    float summ = p_value + i_value;
+
+    if(summ >= max_value_)
+        return max_value_;
+    else if(summ <= min_value_)
+        return min_value_;
 
     return summ;
 }

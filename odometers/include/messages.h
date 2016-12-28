@@ -18,7 +18,7 @@ typedef struct Msg
 template<   int MAX_MESSAGES,
             int MAX_BROADCAST_MESSAGES
         >
-class Messages
+class MessagesT
 {
 public:
     static void init()
@@ -91,15 +91,15 @@ template<
         int MAX_MESSAGES,
         int MAX_BROADCAST_MESSAGES
         >
-Msg Messages<MAX_MESSAGES, MAX_BROADCAST_MESSAGES>::messages_[MAX_MESSAGES];
+Msg MessagesT<MAX_MESSAGES, MAX_BROADCAST_MESSAGES>::messages_[MAX_MESSAGES];
 
 template<
         int MAX_MESSAGES,
         int MAX_BROADCAST_MESSAGES
         >
-Msg Messages<MAX_MESSAGES, MAX_BROADCAST_MESSAGES>::
+Msg MessagesT<MAX_MESSAGES, MAX_BROADCAST_MESSAGES>::
     broadcast_messages_[MAX_BROADCAST_MESSAGES];
 
-typedef Messages<10, 5> MsgHandler;
+typedef MessagesT<10, 5> Messages;
 
 #endif
