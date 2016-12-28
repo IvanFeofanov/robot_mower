@@ -27,10 +27,10 @@ enum{
 Terminal<Serial, Time, COMMAND_CHANGED> terminal;
 Chassis<DriveMotors, Odometers, COMMAND_CHANGED> chassis;
 
-// Process* processes []  = {
-    // &terminal,
-    // &chassis
-// };
+Process* processes []  = {
+    &terminal,
+    &chassis
+};
 
 inline void hardwareInit()
 {
@@ -46,18 +46,16 @@ inline void hardwareInit()
 
 inline void processesInit()
 {
-    terminal.init();
-    chassis.init();
-    // for(int i = 0; i < sizeof(processes) / sizeof(void*); i++)
-        // processes[i]->init();
+    for(uint8_t i = 0; i < sizeof(processes) / sizeof(void*); i++)
+        processes[i]->init();
 }
 
 void loop()
 {
-    terminal.handleMessages();
-    terminal.run();
-    chassis.handleMessages();
-    chassis.run();
+    for(uint8_t i = 0; i < sizeof(processes) / sizeof(void *); i++){
+        processes[i]->handleMessages();
+        processes[i]->run();
+    }
 }
 
 int main()
