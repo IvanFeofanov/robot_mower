@@ -1,5 +1,5 @@
-#ifndef CHASSIS_H
-#define CHASSIS_H
+#ifndef MOTORS_CONTROLLER_H
+#define MOTORS_CONTROLLER_H
 
 #include <stdlib.h>
 #include <avr/io.h>
@@ -18,7 +18,7 @@ template<
     uint16_t PID_COEFF_CHANGED,
     uint16_t SPEED_OBTAINED
     >
-class Chassis: public Process
+class MotorsController: public Process
 {
 public:
     void init()

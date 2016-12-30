@@ -16,7 +16,7 @@ extern "C"
 #include "portable/atmega328/time.h"
 
 #include "processes/terminal.h"
-#include "processes/chassis.h"
+#include "processes/motors_controller.h"
 
 //messages
 enum{
@@ -28,12 +28,12 @@ enum{
 //process
 Terminal<Serial, Time,
         COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> terminal;
-Chassis<Motors, Odometers,
-        COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> chassis;
+MotorsController<Motors, Odometers,
+        COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> motors_controller;
 
 Process* processes []  = {
     &terminal,
-    &chassis
+    &motors_controller
 };
 
 inline void hardwareInit()
