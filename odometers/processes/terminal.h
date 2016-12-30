@@ -25,8 +25,8 @@ public:
         state_ = 0;
         string_length_ = 0;
 
-        left_speed_feedback_ = 1;
-        right_speed_feedback_ = 1;
+        left_speed_feedback_ = 0;
+        right_speed_feedback_ = 0;
     }
 
     void run()

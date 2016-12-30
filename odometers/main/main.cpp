@@ -11,7 +11,7 @@ extern "C"
 #include "messages.h"
 
 #include "portable/atmega328/uart.h"
-#include "portable/atmega328/drive_motors.h"
+#include "portable/atmega328/motors.h"
 #include "portable/atmega328/odometers.h"
 #include "portable/atmega328/time.h"
 
@@ -28,7 +28,7 @@ enum{
 //process
 Terminal<Serial, Time,
         COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> terminal;
-Chassis<DriveMotors, Odometers,
+Chassis<Motors, Odometers,
         COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> chassis;
 
 Process* processes []  = {
@@ -39,7 +39,7 @@ Process* processes []  = {
 inline void hardwareInit()
 {
     Serial::init();
-    DriveMotors::init();
+    Motors::init();
     Odometers::init();
     Time::init();
 

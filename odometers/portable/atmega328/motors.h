@@ -1,5 +1,5 @@
-#ifndef DRIVE_MOTORS_H
-#define DRIVE_MOTORS_H
+#ifndef MOTORS_H
+#define MOTORS_H
 
 extern "C"
 {
@@ -7,7 +7,7 @@ extern "C"
 #include <avr/interrupt.h>
 }
 
-class DriveMotors
+class Motors
 {
 public:
     static void init()
