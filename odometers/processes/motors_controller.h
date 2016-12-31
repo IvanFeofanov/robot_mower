@@ -12,8 +12,9 @@
 #include "types/diff_control.h"
 
 template<
-    typename Drive,
+    typename Motors,
     typename Odometers,
+    typename Time,
     uint16_t COMMAND_CHANGED,
     uint16_t PID_COEFF_CHANGED,
     uint16_t SPEED_OBTAINED
@@ -34,9 +35,16 @@ public:
         //update speed
         if(Time::now() - last_time_ >= 100)
         {
+            float output = 0;
+
+            //left
             left_rps_feedback_ = (float)Odometers::getLeft();
-            float output = regulator_.update(left_rps_input_, left_rps_feedback_);
-            Drive::setPwm((uint8_t)(output));
+            output = left_regulator_.update(left_rps_input_, left_rps_feedback_);
+            Motors::setLeftPwm((uint8_t)(output));
+
+            // right_rps_feedback_ = (float)Odometers::getRight();
+            // output = right_regulator.update(right_rps_input_, right_rps_feedback_);
+            // Motors::setRightPwm((uint8_t)(output));
 
             last_time_ = Time::now();
         }
@@ -60,7 +68,8 @@ public:
             left_rps_input_ = abs(command->left_speed);
             right_rps_input_ = abs(command->right_speed);
 
-            Drive::setDirection((uint8_t)command->left_speed);
+            Motors::setLeftDirection((uint8_t)command->left_speed);
+            Motors::setRightDirection((uint8_t)command->right_speed);
         }
     }
 
@@ -68,20 +77,21 @@ public:
     {
         Pid* pid;
         if(Messages::get(PID_COEFF_CHANGED, (void**)(&pid))){
-            regulator_ = *pid;
+            left_regulator_ = *pid;
         }
     }
 
 
 private:
-    Pid regulator_;
+    Pid left_regulator_;
+    Pid right_regulator_;
+
     uint32_t last_time_;
 
     float left_rps_input_;
     float left_rps_feedback_;
     float right_rps_input_;
     float right_rps_feedback_;
-
 
 };
 

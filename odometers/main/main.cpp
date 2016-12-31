@@ -18,6 +18,10 @@ extern "C"
 #include "processes/terminal.h"
 #include "processes/motors_controller.h"
 
+// Needed for AVR to use virtual functions
+extern "C" void __cxa_pure_virtual(void);
+void __cxa_pure_virtual(void) {}
+
 //messages
 enum{
     COMMAND_CHANGED,
@@ -28,7 +32,7 @@ enum{
 //process
 Terminal<Serial, Time,
         COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> terminal;
-MotorsController<Motors, Odometers,
+MotorsController<Motors, Odometers, Time,
         COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> motors_controller;
 
 Process* processes []  = {

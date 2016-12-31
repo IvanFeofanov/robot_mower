@@ -21,22 +21,32 @@ public:
         TCCR2B |= (1<<CS20); //clk = F_CPU
         OCR2A = 0;
 
-        setDirection(1);
+        setLeftDirection(STOP);
+        setRightDirection(STOP);
     }
 
-    static void setPwm(uint8_t value)
+    static void setLeftPwm(uint8_t value)
     {
         OCR2A = value;
     }
 
-    static uint8_t getPwm()
+    static void setRightPwm(uint8_t value)
+    {
+        //TODO
+    }
+
+    static uint8_t getLeftPwm()
     {
         return OCR2A;
     }
 
-    static void setDirection(int8_t sig)
+    static uint8_t getRightPwm()
     {
-        //TODO вынести порты в параметры шаблона
+        return 0; //TODO
+    }
+
+    static void setLeftDirection(int8_t sig)
+    {
         if(sig > 0){
             //left
             PORTD &= ~(1<<7);
@@ -52,12 +62,19 @@ public:
         }
     }
 
+    static void setRightDirection(int8_t sig)
+    {
+        //TODO
+    }
+
 public:
     enum {
         RIGHT = -1,
         STOP,
         LEFT
     };
+
+    enum { MAX_PWM = 0xff };
 };
 
 

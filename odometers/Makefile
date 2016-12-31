@@ -86,6 +86,7 @@ SRC =
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = ./main/$(TARGET).cpp \
 		 ./utils/pid.cpp \
+		 ./utils/menu_item.cpp \
 		 ./portable/atmega328/uart.cpp \
 		 ./portable/atmega328/motors.cpp \
 		 ./portable/atmega328/odometers.cpp \
