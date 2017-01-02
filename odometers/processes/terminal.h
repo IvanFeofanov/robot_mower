@@ -11,6 +11,7 @@
 #include "../utils/pid.h"
 
 #include "../utils/menu_item.h"
+#include "../utils/tree_menu.h"
 #include "to_state_menu_item.h"
 
 template <
@@ -25,7 +26,7 @@ class Terminal : public Process
 public:
     void init()
     {
-        state_ = 0;
+        state_ = state_wait_begin_symbol;
         string_length_ = 0;
 
         left_speed_feedback_ = 0;
@@ -33,132 +34,166 @@ public:
 
         //make menu
         root_item_          = MenuItem(0, "Main menu");
-        pid_item_           = MenuItem('p', "PID");
-        l_pid_item_         = MenuItem('l', "Left");
-        set_l_pid_item_     = ToStateMenuItem('s', "Set", &state_, state_set_l_pid);
-        get_l_pid_item_     = ToStateMenuItem('g', "Get", &state_, state_get_l_pid);
-        r_pid_item_         = MenuItem('r', "Right");
-        set_r_pid_item_     = ToStateMenuItem('s', "Set", &state_, state_set_r_pid);
-        get_r_pid_item_     = ToStateMenuItem('g', "Get", &state_, state_get_r_pid);
-        speed_item_         = MenuItem('s', "Speed");
-        l_speed_item_       = MenuItem('l', "Left");
-        set_l_speed_item_   = ToStateMenuItem('s', "Set", &state_, state_set_l_speed);
-        get_l_speed_item_   = ToStateMenuItem('g', "Get", &state_, state_get_l_speed);
-        r_speed_item_       = MenuItem('r', "Right");
-        set_r_speed_item_   = ToStateMenuItem('s', "Set", &state_, state_set_r_speed);
-        get_r_speed_item_   = ToStateMenuItem('g', "Get", &state_, state_get_r_speed);
+        pid_item_           =  MenuItem('p', "PID");
+        l_pid_item_         =   MenuItem('l', "Left");
+        set_l_pid_item_     =    ToStateMenuItem('s', "Set", &state_, state_set_l_pid);
+        get_l_pid_item_     =    ToStateMenuItem('g', "Get", &state_, state_get_l_pid);
+        r_pid_item_         =   MenuItem('r', "Right");
+        set_r_pid_item_     =    ToStateMenuItem('s', "Set", &state_, state_set_r_pid);
+        get_r_pid_item_     =    ToStateMenuItem('g', "Get", &state_, state_get_r_pid);
+        speed_item_         =  MenuItem('s', "Speed");
+        l_speed_item_       =   MenuItem('l', "Left");
+        set_l_speed_item_   =    ToStateMenuItem('s', "Set", &state_, state_set_l_speed);
+        get_l_speed_item_   =    ToStateMenuItem('g', "Get", &state_, state_get_l_speed);
+        r_speed_item_       =   MenuItem('r', "Right");
+        set_r_speed_item_   =    ToStateMenuItem('s', "Set", &state_, state_set_r_speed);
+        get_r_speed_item_   =    ToStateMenuItem('g', "Get", &state_, state_get_r_speed);
+
+        root_item_.addChild(&pid_item_);
+        pid_item_.addChild(&l_pid_item_);
+        l_pid_item_.addChild(&set_l_pid_item_);
+        set_l_pid_item_.addNext(&get_l_pid_item_);
+        l_pid_item_.addNext(&r_pid_item_);
+        r_pid_item_.addChild(&set_r_pid_item_);
+        set_r_pid_item_.addNext(&get_r_pid_item_);
+
+        pid_item_.addNext(&speed_item_);
+        speed_item_.addChild(&l_speed_item_);
+        l_speed_item_.addChild(&set_l_speed_item_);
+        set_l_speed_item_.addNext(&get_l_speed_item_);
+        l_speed_item_.addNext(&r_speed_item_);
+        r_speed_item_.addChild(&set_r_speed_item_);
+        set_r_speed_item_.addNext(&get_r_speed_item_);
+
+        menu_ = TreeMenu(&root_item_, &state_, state_print_help);
     }
 
     void run()
     {
+        int speed;
+
         switch(state_)
         {
-        case wait_begin_symbol:
+        case state_wait_begin_symbol:
             if(Serial::available() > 0){
                 char ch = Serial::read();
                 if(ch == ':'){
-                    state_ = wait_begin_symbol;
-                    string_length_ = 0;
+                    state_ = state_get_symbol;
                 }
             }
             break;
-        //
-        // case get_command:
-        //     if(Serial::available() > 0){
-        //         command_ = Serial::read();
-        //         if(command_ == 's' || command_ == 'g'){
-        //             state_ = get_object;
-        //         }else{
-        //             state_ = wait_begin_symbol;
-        //         }
-        //     }
-        //     break;
-        //
-        // case get_object:
-        //     if(Serial::available() > 0){
-        //         object_ = Serial::read();
-        //         switch(command_)
-        //         {
-        //         case 's':
-        //             if(object_ == 'p'){
-        //                 state_ = set_pid_coef;
-        //             }else if(object_ == 's'){
-        //                 state_ = set_speed;
-        //             }else{
-        //                 state_ = wait_begin_symbol;
-        //             }
-        //             break;
-        //
-        //         case 'g':
-        //             if(object_ == 'p')
-        //                 state_ = wait_begin_symbol;
-        //             else if(object_ == 'f')
-        //                 state_ = send_speed;
-        //             else
-        //                 state_ = wait_begin_symbol;
-        //             break;
-        //
-        //         default:
-        //             state_ = wait_begin_symbol;
-        //         }
-        //
-        //         string_length_ = 0;
-        //     }
-        //     break;
-        //
-        // case set_pid_coef:
-        //     if(Serial::available() > 0){
-        //         char ch = Serial::read();
-        //         if(ch == '\n'){
-        //             buffer_[string_length_] = '\0';
-        //             int i_max, i_min, p, i, d;
-        //             sscanf(buffer_, "imax=%d imin=%d p=%d i=%d d=%d",
-        //                     &i_max, &i_min, &p, &i, &d);
-        //             pid_ = Pid(i_max, i_min, p, i, d);
-        //
-        //             Messages::send(PID_COEFF_CHANGED, &pid_);
-        //             state_ = wait_begin_symbol;
-        //         }else{
-        //             buffer_[string_length_] = ch;
-        //         }
-        //         string_length_++;
-        //     }
-        //     break;
-        //
-        // case set_speed:
-        //     if(Serial::available() > 0){
-        //         char ch = Serial::read();
-        //         if(ch == '\n'){
-        //             buffer_[string_length_] = '\0';
-        //             int l, r;
-        //             sscanf(buffer_, "l=%d r=%d", &l, &r);
-        //             diff_control_.left_speed = l;
-        //             diff_control_.right_speed = r;
-        //
-        //             Messages::send(COMMAND_CHANGED, &diff_control_);
-        //             state_ = wait_begin_symbol;
-        //         }else{
-        //             buffer_[string_length_] = ch;
-        //         }
-        //         string_length_++;
-        //     }
-        //     break;
 
-        case send_speed:
-            if(Serial::isWriten()){
-                sprintf(buffer_, "ls=%d rs=%d\n",
-                        (int)left_speed_feedback_, (int)right_speed_feedback_);
+        case state_get_symbol:
+            if(Serial::available() > 0){
+                char ch = Serial::read();
+                if(!menu_.select(ch)){
+                    state_ = state_wait_begin_symbol;
+                }
+            }
+            break;
+
+        case state_set_l_pid:
+            state_ = state_receiving_string;
+            receiving_next_state_ = state_set_l_pid_parsing;
+            string_length_ = 0;
+            break;
+
+        case state_set_l_pid_parsing:
+            int i_max, i_min, p, i, d;
+            sscanf(buffer_, "imax=%d imin=%d p=%d i=%d d=%d",
+                    &i_max, &i_min, &p, &i, &d);
+            pid_ = Pid(i_max, i_min, p, i, d);
+            Messages::send(PID_COEFF_CHANGED, &diff_control_);
+            state_ = state_wait_begin_symbol;
+            break;
+
+        case state_get_l_pid:
+            sprintf(buffer_, "imax=%d imin=%d p=%d i=%d d=%d\n", (int)pid_.i_max_,
+                    (int)pid_.i_min_, (int)pid_.p_gain_,
+                    (int)pid_.i_gain_, (int)pid_.d_gain_);
+            Serial::write(buffer_, strlen(buffer_));
+            state_ = state_transfering;
+            transfering_next_state_ = state_wait_begin_symbol;
+            break;
+
+        case state_set_r_pid:
+            break;
+
+        case state_get_r_pid:
+            break;
+
+        case state_set_l_speed:
+            state_ = state_receiving_string;
+            receiving_next_state_ = state_set_l_speed_parsing;
+            string_length_ = 0;
+            break;
+
+        case state_set_l_speed_parsing:
+            sscanf(buffer_, "%d", &speed);
+            diff_control_.left_speed = speed;
+            Messages::send(COMMAND_CHANGED, (void*)(&diff_control_));
+            state_ = state_wait_begin_symbol;
+            break;
+
+        case state_get_l_speed:
+            sprintf(buffer_, "%d\n", (int)left_speed_feedback_);
+            Serial::write(buffer_, strlen(buffer_));
+            state_ = state_transfering;
+            transfering_next_state_ = state_wait_begin_symbol;
+            break;
+
+        case state_set_r_speed:
+            state_ = state_receiving_string;
+            receiving_next_state_ = state_set_r_speed_parsing;
+            break;
+
+        case state_set_r_speed_parsing:
+            sscanf(buffer_, "%d", &speed);
+            diff_control_.right_speed = speed;
+            Messages::send(COMMAND_CHANGED, (void*)(&diff_control_));
+            state_ = state_wait_begin_symbol;
+
+            break;
+
+        case state_get_r_speed:
+            sprintf(buffer_, "%d\n", (int)right_speed_feedback_);
+            Serial::write(buffer_, strlen(buffer_));
+            state_ = state_transfering;
+            transfering_next_state_ = state_wait_begin_symbol;
+            break;
+
+        case state_print_help:
+            menu_.getHelpOneLine(buffer_);
+            if(buffer_[0] == '\0'){
+                state_ = state_get_symbol;
+            }else{
+                strcat(buffer_, "\n");
                 Serial::write(buffer_, strlen(buffer_));
-                state_ = wait_transfering;
+                state_ = state_transfering;
+                transfering_next_state_ = state_print_help;
             }
             break;
 
-        case wait_transfering:
+        case state_transfering:
             if(Serial::isWriten()){
-                state_ = wait_begin_symbol;
+                state_ = transfering_next_state_;
             }
             break;
 
+        case state_receiving_string:
+            if(Serial::available() > 0){
+                char ch = Serial::read();
+                if(ch == '\n'){
+                    if(string_length_ == 0)
+                        break;
+                    buffer_[string_length_] = '\0';
+                    state_ = receiving_next_state_;
+                }else{
+                    buffer_[string_length_] = ch;
+                    string_length_++;
+                }
+            }
+            break;
         }
     }
 
@@ -177,24 +212,28 @@ public:
 private:
     uint8_t state_;
     enum {
-        wait_begin_symbol,
+        state_wait_begin_symbol,
+        state_get_symbol,
 
         state_set_l_pid,
+        state_set_l_pid_parsing,
         state_get_l_pid,
         state_set_r_pid,
         state_get_r_pid,
         state_set_l_speed,
+        state_set_l_speed_parsing,
         state_get_l_speed,
+        state_set_r_speed_parsing,
         state_set_r_speed,
         state_get_r_speed,
+        state_print_help,
 
-        send_speed,
-        wait_transfering
-
-        // parsing,
-        // send_counter,
-        // wait_transfering
+        state_transfering,
+        state_receiving_string
     };
+
+    uint8_t transfering_next_state_;
+    uint8_t receiving_next_state_;
 
     enum { buffer_size_ = 128 };
     char buffer_[buffer_size_];
@@ -216,8 +255,7 @@ private:
     MenuItem        r_speed_item_;
     ToStateMenuItem set_r_speed_item_;
     ToStateMenuItem get_r_speed_item_;
-
-    MenuItem* current_menu_item_;
+    TreeMenu    menu_;
 
     DiffControl diff_control_;
     Pid pid_;

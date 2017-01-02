@@ -87,6 +87,7 @@ SRC =
 CPPSRC = ./main/$(TARGET).cpp \
 		 ./utils/pid.cpp \
 		 ./utils/menu_item.cpp \
+		 ./utils/tree_menu.cpp \
 		 ./portable/atmega328/uart.cpp \
 		 ./portable/atmega328/motors.cpp \
 		 ./portable/atmega328/odometers.cpp \

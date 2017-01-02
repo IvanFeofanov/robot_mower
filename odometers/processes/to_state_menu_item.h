@@ -2,7 +2,7 @@
 #define TO_STATE_MENU_ITEM
 
 #include "../utils/menu_item.h"
-
+#include <avr/io.h>
 class ToStateMenuItem: public MenuItem
 {
 public:
@@ -24,7 +24,13 @@ protected:
     {
         *state_var_ptr_ = target_state_;
 
-        return MenuItem::callBack();
+        //to root
+        MenuItem* item = this;
+        while(item->parent != 0)
+            item = item->parent;
+
+        return item;
+        // return MenuItem::callBack();
     }
 
 private:

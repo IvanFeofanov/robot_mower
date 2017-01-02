@@ -9,7 +9,6 @@ public:
     float update(float x, float y);
 
 
-private:
     float i_max_;
     float i_min_;
     float i_state_;
@@ -18,6 +17,7 @@ private:
     float p_gain_;
     float d_gain_;
 
+private:
     float max_value_;
     float min_value_;
 };
