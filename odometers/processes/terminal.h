@@ -103,7 +103,7 @@ public:
             sscanf(buffer_, "imax=%d imin=%d p=%d i=%d d=%d",
                     &i_max, &i_min, &p, &i, &d);
             pid_ = Pid(i_max, i_min, p, i, d);
-            Messages::send(PID_COEFF_CHANGED, &diff_control_);
+            Messages::send(PID_COEFF_CHANGED, (void*)(&pid_));
             state_ = state_wait_begin_symbol;
             break;
 

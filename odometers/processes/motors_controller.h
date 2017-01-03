@@ -78,10 +78,6 @@ public:
         Pid* pid;
         if(Messages::get(PID_COEFF_CHANGED, (void**)(&pid))){
             left_regulator_ = *pid;
-            if(pid->p_gain_ > 10)
-                PORTB |= (1<<5);
-            else
-                PORTB &= ~(1<<5);
         }
     }
 
