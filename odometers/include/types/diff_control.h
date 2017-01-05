@@ -3,8 +3,8 @@
 
 typedef struct DiffControl
 {
-    float left_speed;
-    float right_speed;
+    int16_t left_speed;
+    int16_t right_speed;
 }DiffControl;
 
 #endif

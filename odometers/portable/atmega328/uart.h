@@ -5,11 +5,11 @@ extern "C"
 {
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 }
 
 #include "ring_buffer.h"
 
-#include "disable_interrupt.h"
 
 enum UART_BAUND_RATE
 {
@@ -62,41 +62,56 @@ public:
 
     static bool write(const void* buffer, uint16_t length)
     {
-        DisableInterrupt di;
-
         if(length == 0 || !isWriten())
             return false;
 
-        transfer_buffer_ptr_     = (char*)buffer;
-        transfer_buffer_length_  = length;
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            transfer_buffer_ptr_     = (char*)buffer;
+            transfer_buffer_length_  = length;
 
-        UDR0 = transfer_buffer_ptr_[transfer_buffer_index_];
+            UDR0 = transfer_buffer_ptr_[transfer_buffer_index_];
 
-        UCSR0B |= (1<<UDRIE0); //UDR empty interrupt enable
+            UCSR0B |= (1<<UDRIE0); //UDR empty interrupt enable
+
+        }
 
         return true;
     }
 
     static bool isWriten()
     {
-        DisableInterrupt di;
-        return transfer_buffer_length_ == 0;
+        bool is_writen = false;
+
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            is_writen = transfer_buffer_length_ == 0;
+        }
+
+        return is_writen;
     }
 
     static uint16_t available()
     {
-        DisableInterrupt di;
+        uint16_t count = 0;
 
-        uint16_t count = receive_buffer_.count();
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            count = receive_buffer_.count();
+        }
+
         return count;
     }
 
     static char read()
     {
-        DisableInterrupt di;
-
         char value = 0;
-        bool is_ok = receive_buffer_.take(&value);
+        bool is_ok = false;
+
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            is_ok = receive_buffer_.take(&value);
+        }
 
         if(is_ok)
             return value;
@@ -105,24 +120,29 @@ public:
 
     static uint16_t read(void* buffer, uint16_t length)
     {
-        DisableInterrupt di;
+        uint16_t len = 0;
 
-        char value;
-        for(uint16_t i = 0; i < length; i++){
-            if(receive_buffer_.take(&value)){
-                ((char*)buffer)[i] = value;
-            }else{
-                return i;
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            char value;
+            for(len = 0; len < length; len++){
+                if(receive_buffer_.take(&value)){
+                    ((char*)buffer)[len] = value;
+                }else{
+                    break;
+                }
             }
         }
 
-        return length;
+        return len;
     }
 
     static void flush()
     {
-        DisableInterrupt di;
-        receive_buffer_.flush();
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            receive_buffer_.flush();
+        }
     }
 
 public:

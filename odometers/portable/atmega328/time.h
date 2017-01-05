@@ -5,9 +5,8 @@ extern "C"
 {
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 }
-
-#include "disable_interrupt.h"
 
 class Time
 {
@@ -20,16 +19,18 @@ public:
 
     static uint32_t now()
     {
-        DisableInterrupt di();
-
         uint32_t time_now;
 
-        time_now = overflow_ms_;
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            time_now = overflow_ms_;
+        }
+
         return time_now;
     }
 
 public:
-    
+
     static void tickHandler()
     {
         timer_ticks_ += CLOCK_TICKS_PER_TIMER_OVERFLOW;

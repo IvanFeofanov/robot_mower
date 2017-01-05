@@ -13,8 +13,8 @@ public:
     static void init()
     {
         //ports
-        DDRD |= (1<<7);
-        DDRB |= (1<<0) | (1<<3);
+        DDRD |= (1<<6) | (1<<7);
+        DDRB |= (1<<3);
 
         //pwm
         TCCR2A |= (1<<COM2A1) | (1<<WGM21) | (1<<WGM20); //Fast pwm
@@ -50,15 +50,15 @@ public:
         if(sig > 0){
             //left
             PORTD &= ~(1<<7);
-            PORTB |= (1<<0);
+            PORTD |= (1<<6);
         }else if(sig < 0){
             //right
             PORTD |= (1<<7);
-            PORTB &= ~(1<<0);
+            PORTD &= ~(1<<6);
         }else{
             //stop
             PORTD &= ~(1<<7);
-            PORTB &= ~(1<<0);
+            PORTD &= ~(1<<6);
         }
     }
 

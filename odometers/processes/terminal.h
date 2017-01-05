@@ -99,18 +99,16 @@ public:
             break;
 
         case state_set_l_pid_parsing:
-            int i_max, i_min, p, i, d;
-            sscanf(buffer_, "imax=%d imin=%d p=%d i=%d d=%d",
-                    &i_max, &i_min, &p, &i, &d);
-            pid_ = Pid(i_max, i_min, p, i, d);
+            sscanf(buffer_, "imax=%f imin=%f p=%f i=%f d=%f",
+                    &pid_.i_max, &pid_.i_min, &pid_.p_gain, &pid_.i_gain, &pid_.d_gain);
             Messages::send(PID_COEFF_CHANGED, (void*)(&pid_));
             state_ = state_wait_begin_symbol;
             break;
 
         case state_get_l_pid:
-            sprintf(buffer_, "imax=%d imin=%d p=%d i=%d d=%d\n", (int)pid_.i_max_,
-                    (int)pid_.i_min_, (int)pid_.p_gain_,
-                    (int)pid_.i_gain_, (int)pid_.d_gain_);
+            sprintf(buffer_, "imax=%f imin=%f p=%f i=%f d=%f\n", pid_.i_max,
+                    pid_.i_min, pid_.p_gain,
+                    pid_.i_gain, pid_.d_gain);
             Serial::write(buffer_, strlen(buffer_));
             state_ = state_transfering;
             transfering_next_state_ = state_wait_begin_symbol;

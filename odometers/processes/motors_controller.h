@@ -38,11 +38,11 @@ public:
             float output = 0;
 
             //left
-            left_rps_feedback_ = (float)Odometers::getLeft();
+            left_rps_feedback_ = (float)Odometers::getLeftRps();
             output = left_regulator_.update(left_rps_input_, left_rps_feedback_);
             Motors::setLeftPwm((uint8_t)(output));
 
-            // right_rps_feedback_ = (float)Odometers::getRight();
+            // right_rps_feedback_ = (float)Odometers::getRightCounter();
             // output = right_regulator.update(right_rps_input_, right_rps_feedback_);
             // Motors::setRightPwm((uint8_t)(output));
 
