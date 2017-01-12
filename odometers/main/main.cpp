@@ -7,9 +7,6 @@ extern "C"
 #include <string.h>
 }
 
-#include "process.h"
-#include "messages.h"
-
 #include "portable/atmega328/uart.h"
 #include "portable/atmega328/motors.h"
 #include "portable/atmega328/odometers.h"
@@ -17,30 +14,13 @@ extern "C"
 
 #include "processes/terminal.h"
 #include "processes/motors_controller.h"
-
-// Needed for AVR to use virtual functions
-extern "C" void __cxa_pure_virtual(void);
-void __cxa_pure_virtual(void) {}
-
-//messages
-enum{
-    COMMAND_CHANGED,
-    PID_COEFF_CHANGED,
-    SPEED_OBTAINED
-};
+#include "processes/mediator.h"
 
 //process
-Terminal<Serial, Time,
-        COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> terminal;
-MotorsController<Motors, Odometers, Time,
-        COMMAND_CHANGED, PID_COEFF_CHANGED, SPEED_OBTAINED> motors_controller;
+Terminal<Serial, Time> terminal;
+MotorsController<Motors, Odometers, Time> motors_controller;
 
-Process* processes []  = {
-    &terminal,
-    &motors_controller
-};
-
-inline void hardwareInit()
+static inline void hardwareInit()
 {
     Serial::init();
     Motors::init();
@@ -52,18 +32,17 @@ inline void hardwareInit()
     sei();
 }
 
-inline void processesInit()
+static inline void processesInit()
 {
-    for(uint8_t i = 0; i < sizeof(processes) / sizeof(void*); i++)
-        processes[i]->init();
+    terminal.init();
+    motors_controller.init();
+    Mediator::init();
 }
 
-void loop()
+static inline void loop()
 {
-    for(uint8_t i = 0; i < sizeof(processes) / sizeof(void *); i++){
-        processes[i]->handleMessages();
-        processes[i]->run();
-    }
+    terminal.run();
+    motors_controller.run();
 }
 
 int main()
@@ -71,11 +50,8 @@ int main()
     hardwareInit();
     processesInit();
 
-    Messages::init();
-
     while(true){
         loop();
-        Messages::run();
     }
 
     return 0;

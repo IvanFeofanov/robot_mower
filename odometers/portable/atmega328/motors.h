@@ -10,7 +10,7 @@ extern "C"
 class Motors
 {
 public:
-    static void init()
+    static inline void init()
     {
         //ports
         DDRD |= (1<<6) | (1<<7);
@@ -19,52 +19,36 @@ public:
         //pwm
         TCCR2A |= (1<<COM2A1) | (1<<WGM21) | (1<<WGM20); //Fast pwm
         TCCR2B |= (1<<CS20); //clk = F_CPU
+
+        OCR2A = 0;
         OCR2A = 0;
 
-        setLeftDirection(STOP);
-        setRightDirection(STOP);
+        setDirection(STOP, STOP);
     }
 
-    static void setLeftPwm(uint8_t value)
+    static inline void setPwm(uint8_t left, uint8_t right)
     {
-        OCR2A = value;
+        OCR2A = left;
+        //TODO = right;
+        OCR2A = left;
     }
 
-    static void setRightPwm(uint8_t value)
+    static void setDirection(int8_t left, uint8_t right)
     {
-        //TODO
-    }
-
-    static uint8_t getLeftPwm()
-    {
-        return OCR2A;
-    }
-
-    static uint8_t getRightPwm()
-    {
-        return 0; //TODO
-    }
-
-    static void setLeftDirection(int8_t sig)
-    {
-        if(sig > 0){
-            //left
-            PORTD &= ~(1<<7);
+        PORTD &= ~(1<<7);
+        PORTD &= ~(1<<6);
+        if(left > 0)
             PORTD |= (1<<6);
-        }else if(sig < 0){
-            //right
+        if(left < 0)
             PORTD |= (1<<7);
-            PORTD &= ~(1<<6);
-        }else{
-            //stop
-            PORTD &= ~(1<<7);
-            PORTD &= ~(1<<6);
-        }
-    }
 
-    static void setRightDirection(int8_t sig)
-    {
-        //TODO
+        //TODO right
+        PORTD &= ~(1<<7);
+        PORTD &= ~(1<<6);
+        if(left > 0)
+            PORTD |= (1<<6);
+        if(left < 0)
+            PORTD |= (1<<7);
     }
 
 public:

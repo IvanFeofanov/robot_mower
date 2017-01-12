@@ -11,7 +11,7 @@ extern "C"
 class Time
 {
 public:
-    static void init()
+    static inline void init()
     {
         TCCR0B |= (1<<CS01) | (1<<CS00);
         TIMSK0 |= (1<<TOIE0);
@@ -30,8 +30,7 @@ public:
     }
 
 public:
-
-    static void tickHandler()
+    static inline void tickHandler()
     {
         timer_ticks_ += CLOCK_TICKS_PER_TIMER_OVERFLOW;
         for(; timer_ticks_ > CLOCK_TICKS_PER_MS; timer_ticks_ -= CLOCK_TICKS_PER_MS){

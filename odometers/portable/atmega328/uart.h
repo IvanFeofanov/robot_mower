@@ -33,7 +33,7 @@ template<
 class Uart
 {
 public:
-    static void init()
+    static inline void init()
     {
         //baund rate
         uint16_t ubrr = 0;
@@ -206,7 +206,7 @@ template<
 uint16_t Uart<BAUND_RATE, SPEED_MODE, RECEIVE_BUFFER_SIZE>::transfer_buffer_length_;
 
 
-typedef Uart<UBR_9600, UART_NORMAL_SPEED_MODE, 128> Serial;
+typedef Uart<UBR_9600, UART_NORMAL_SPEED_MODE, 32> Serial;
 
 
 #endif
