@@ -11,6 +11,7 @@ extern "C"
 #include "portable/atmega328/motors.h"
 #include "portable/atmega328/odometers.h"
 #include "portable/atmega328/time.h"
+#include "portable/atmega328/twi.h"
 
 #include "processes/terminal.h"
 #include "processes/motors_controller.h"
@@ -26,6 +27,7 @@ static inline void hardwareInit()
     Motors::init();
     Odometers::init();
     Time::init();
+    I2c::init();
 
     DDRB |= (1<<5); //led
 
@@ -45,10 +47,24 @@ static inline void loop()
     motors_controller.run();
 }
 
+char* buffer;
+
 int main()
 {
     hardwareInit();
     processesInit();
+
+    buffer = "hello";
+
+    I2c::write(4, (uint8_t*)buffer, 5);
+    _delay_ms(100);
+    char debag_buffer[32];
+    for(int i = 0; i < I2c::work_log_index_; i++){
+        sprintf(debag_buffer, "%x ", I2c::work_log_[i]);
+        Serial::write(debag_buffer, strlen(debag_buffer));
+        while(!Serial::isWriten());
+        // PORTB |= (1<<5);
+    }
 
     while(true){
         loop();
