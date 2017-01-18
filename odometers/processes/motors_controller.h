@@ -26,13 +26,15 @@ public:
         {
             //left
             Mediator::real_rps[LEFT] = Odometers::getLeftRps();
-            Mediator::real_rps[RIGHT] = Odometers::getRightRps();
+            Mediator::counter[LEFT] = Odometers::getLeftCounter();
             uint16_t left_pwm = Mediator::pid[LEFT].update(
                     Mediator::set_rps[LEFT] < 0 ?
                     -Mediator::set_rps[LEFT] :
                     Mediator::set_rps[LEFT],
                     Mediator::real_rps[LEFT]);
 
+            Mediator::real_rps[RIGHT] = Odometers::getRightRps();
+            Mediator::counter[RIGHT] = Odometers::getRightCounter();
             uint16_t right_pwm = Mediator::pid[RIGHT].update(
                     Mediator::set_rps[RIGHT] < 0 ?
                     -Mediator::set_rps[RIGHT] :

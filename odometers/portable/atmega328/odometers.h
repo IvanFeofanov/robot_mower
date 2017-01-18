@@ -35,7 +35,6 @@ public:
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             tmp = left_counter_;
-            left_counter_ = 0;
         }
         return tmp;
     }
@@ -46,7 +45,6 @@ public:
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             tmp = right_counter_;
-            right_counter_ = 0;
         }
         return tmp;
     }

@@ -55,7 +55,7 @@ public:
         //     work_log_[work_log_index_] = 0xff;
         // }
         // work_log_index_++;
-
+        //
         switch(TWSR & 0xf8)
         {
         case 0x78: //Receive SLA+W LP broadcast
@@ -147,8 +147,8 @@ private:
 
 
 // public:
-//     volatile static uint8_t work_log_[20];
-//     volatile static uint8_t work_log_index_;
+    // volatile static uint8_t work_log_[20];
+    // volatile static uint8_t work_log_index_;
 
 };
 
@@ -178,10 +178,10 @@ CallbackPtr TwiSlave<BUFFER_SIZE>::request_event_ptr_;
 
 // template<uint8_t BUFFER_SIZE>
 // volatile uint8_t TwiSlave<BUFFER_SIZE>::work_log_[20];
-//
+// //
 // template<uint8_t BUFFER_SIZE>
 // volatile uint8_t TwiSlave<BUFFER_SIZE>::work_log_index_;
 
-typedef TwiSlave<6> Twi;
+typedef TwiSlave<5> Twi;
 
 #endif

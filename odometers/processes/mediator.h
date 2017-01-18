@@ -22,10 +22,12 @@ public:
     static Pid pid[2];
     static int16_t set_rps[2];
     static int16_t real_rps[2];
+    static uint32_t counter[2];
 };
 
 Pid Mediator::pid[2];
 int16_t Mediator::set_rps[2];
 int16_t Mediator::real_rps[2];
+uint32_t Mediator::counter[2];
 
 #endif
