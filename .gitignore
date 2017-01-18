@@ -10,5 +10,6 @@
 *.sym
 *.eep
 vims
+vim
 /.dep
 

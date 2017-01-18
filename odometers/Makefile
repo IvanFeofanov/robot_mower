@@ -90,7 +90,7 @@ CPPSRC = ./main/$(TARGET).cpp \
 		 ./portable/atmega328/motors.cpp \
 		 ./portable/atmega328/odometers.cpp \
 		 ./portable/atmega328/time.cpp \
-		 ./portable/atmega328/twi.cpp
+		 ./portable/atmega328/twi_slave.cpp
 
 
 # List Assembler source files here.
