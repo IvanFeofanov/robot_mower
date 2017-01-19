@@ -41,7 +41,7 @@
 
 
 # MCU name
-MCU = atmega328
+MCU = atmega328p
 
 
 # Processor frequency.
@@ -278,14 +278,14 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Programming hardware
 # Type: avrdude -c ?
 # to get a full listing.
-#
-AVRDUDE_PROGRAMMER = stk500v2
+
+AVRDUDE_PROGRAMMER = arduino
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-AVRDUDE_PORT = ttyUSB1    # programmer connected to serial device
+AVRDUDE_PORT = /dev/ttyUSB0    # programmer connected to serial device
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-#AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
+# AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
 
 
 # Uncomment the following if you want avrdude's erase cycle counter.
@@ -302,11 +302,12 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 # to submit bug reports.
 #AVRDUDE_VERBOSE = -v -v
 
-AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
+AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -b57600 -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
 
+# AVRDUDE_FLAGS = -pm328p -carduino -P $(AVRDUDE_PORT) -b57600 -D
 
 
 #---------------- Debugging Options ----------------
@@ -452,8 +453,8 @@ gccversion :
 
 # Program the device.
 program: $(TARGET).hex $(TARGET).eep
-	#$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
-	avrdude -pm328p -carduino -P/dev/ttyUSB0 -b57600 -D -Uflash:w:main.hex:a
+	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
+	# avrdude -pm328p -carduino -P/dev/ttyUSB0 -b57600 -D -Uflash:w:main.hex:a
 
 
 # Generate avr-gdb config/init file which does the following:

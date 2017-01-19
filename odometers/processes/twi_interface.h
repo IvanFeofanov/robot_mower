@@ -35,7 +35,6 @@ private:
 
     static void getValueCb(uint8_t* request, uint8_t length)
     {
-        // PORTB |= (1<<5);
         switch(request[0])
         {
         case RPS:

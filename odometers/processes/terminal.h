@@ -1,3 +1,13 @@
+/*
+ * Command format:
+ * :<function><parameter><side><data0><data...><datan>'\n'
+ * <function>       - set = 0, get = 1, save = 2
+ * <perameter>      - i_max = 0, i_min = 1, p = 2, i = 3, d = 4, rps = 5
+ * <side>           - left = 0, right = 1
+ * <data0> ..       - data bytes
+ */
+
+
 #ifndef TERMINAL_H
 #define TERMINAL_H
 
@@ -48,10 +58,12 @@ public:
                     uint8_t function = buffer_[0] - '0';
 
                     //paramer
-                    parameter_ = buffer_[1] - '0';
+                    if(string_length_ >= 2)
+                        parameter_ = buffer_[1] - '0';
 
                     //side
-                    side_ = buffer_[2] - '0';
+                    if(string_length_ >= 3)
+                        side_ = buffer_[2] - '0';
 
                     //data
                     if(function == function_set){
@@ -79,13 +91,13 @@ public:
                 Mediator::pid[side_].i_min = data_;
                 break;
             case param_p_gain:
-                Mediator::pid[side_].p_gain = data_;
+                Mediator::pid[side_].p_gain_x100 = data_;
                 break;
             case param_i_gain:
-                Mediator::pid[side_].i_gain = data_;
+                Mediator::pid[side_].i_gain_x100 = data_;
                 break;
             case param_d_gain:
-                Mediator::pid[side_].d_gain = data_;
+                Mediator::pid[side_].d_gain_x100 = data_;
                 break;
             case param_rps:
                 Mediator::set_rps[side_] = data_;
@@ -104,13 +116,13 @@ public:
                 value = Mediator::pid[side_].i_min;
                 break;
             case param_p_gain:
-                value = Mediator::pid[side_].p_gain;
+                value = Mediator::pid[side_].p_gain_x100;
                 break;
             case param_i_gain:
-                value = Mediator::pid[side_].i_gain;
+                value = Mediator::pid[side_].i_gain_x100;
                 break;
             case param_d_gain:
-                value = Mediator::pid[side_].d_gain;
+                value = Mediator::pid[side_].d_gain_x100;
                 break;
             case param_rps:
                 value = Mediator::real_rps[side_];
@@ -129,6 +141,11 @@ public:
             state_ = state_transfering;
             break;
 
+        case state_save:
+            Mediator::save_pid_settings_flag = true;
+            state_ = state_wait_begin_symbol;
+            break;
+
         case state_transfering:
             if(Serial::isWriten()){
                 state_ = state_wait_begin_symbol;
@@ -145,6 +162,7 @@ private:
 
         state_set,
         state_get,
+        state_save,
 
         state_transfering,
         state_receiving_string
