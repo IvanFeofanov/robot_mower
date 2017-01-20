@@ -11,7 +11,6 @@ extern "C"
 #include "portable/atmega328/uart.h"
 #include "portable/atmega328/motors.h"
 #include "portable/atmega328/odometers.h"
-#include "portable/atmega328/time.h"
 #include "portable/atmega328/twi_slave.h"
 
 #include "processes/terminal.h"
@@ -20,15 +19,14 @@ extern "C"
 #include "processes/mediator.h"
 
 //process
-Terminal<Serial, Time> terminal;
-MotorsController<Motors, Odometers, Time> motors_controller;
+Terminal<Serial> terminal;
+MotorsController<Motors, Odometers> motors_controller;
 
 static inline void hardwareInit()
 {
     Serial::init();
     Motors::init();
     Odometers::init();
-    Time::init();
     Twi::init(2);
 
     DDRB |= (1<<5); //led

@@ -7,48 +7,66 @@ extern "C"
 #include <avr/interrupt.h>
 }
 
+#define M_L_1_HIGH {PORTD |= (1<<7);}
+#define M_L_1_LOW {PORTD &= ~(1<<7);}
+#define M_L_2_HIGH {PORTB |= (1<<0);}
+#define M_L_2_LOW {PORTB &= ~(1<<0);}
+
+#define M_R_1_HIGH {PORTB |= (1<<1);}
+#define M_R_1_LOW {PORTB &= ~(1<<1);}
+#define M_R_2_HIGH {PORTB |= (1<<2);}
+#define M_R_2_LOW {PORTB &= ~(1<<2);}
+
+#define LEFT_PWM (OCR0A)
+#define RIGHT_PWM (OCR0B)
+
 class Motors
 {
 public:
     static inline void init()
     {
         //ports
-        DDRD |= (1<<6) | (1<<7);
-        DDRB |= (1<<3);
+        DDRD |= (1<<5) | (1<<6); // OC0B, OC0A
+        DDRD |= (1<<7); //M11
+        DDRB |= (1<<0) | (1<<1) | (1<<2) | (1<<3); //M12, M21, M22
 
         //pwm
-        TCCR2A |= (1<<COM2A1) | (1<<WGM21) | (1<<WGM20); //Fast pwm
-        TCCR2B |= (1<<CS20); //clk = F_CPU
+        TCCR0A |= (1<<COM0A1) | // OCR0A non-inverting mode
+                  (1<<COM0B1) | // OCR0B non-inverting mode
+                  (1<<WGM01) | (1<<WGM00); //Fast pwm
 
-        OCR2A = 0;
-        OCR2A = 0;
+        TCCR0B |= (1<<CS00); //clk = F_CPU
+
+        LEFT_PWM = 0;
+        RIGHT_PWM = 0;
 
         setDirection(STOP, STOP);
     }
 
     static inline void setPwm(uint8_t left, uint8_t right)
     {
-        OCR2A = left;
-        //TODO = right;
-        OCR2A = left;
+        LEFT_PWM = left;
+        RIGHT_PWM = right;
     }
 
     static void setDirection(int8_t left, uint8_t right)
     {
-        PORTD &= ~(1<<7);
-        PORTD &= ~(1<<6);
+        //left
+        M_L_1_LOW;
+        M_L_2_LOW;
         if(left > 0)
-            PORTD |= (1<<6);
+            M_L_1_HIGH;
         if(left < 0)
-            PORTD |= (1<<7);
+            M_L_2_HIGH;
 
-        //TODO right
-        PORTD &= ~(1<<7);
-        PORTD &= ~(1<<6);
-        if(left > 0)
-            PORTD |= (1<<6);
-        if(left < 0)
-            PORTD |= (1<<7);
+        //right
+        M_R_1_LOW;
+        M_R_2_LOW;
+        if(right > 0)
+            M_R_1_HIGH;
+        if(right < 0)
+            M_R_2_HIGH;
+
     }
 
 public:

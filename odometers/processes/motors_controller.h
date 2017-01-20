@@ -7,8 +7,7 @@
 
 template<
     typename Motors,
-    typename Odometers,
-    typename Time
+    typename Odometers
     >
 class MotorsController
 {
@@ -24,38 +23,42 @@ public:
 
     void run()
     {
-        //update speed
-        if(Time::now() - last_time_ >= 100)
-        {
-            //left
-            Mediator::real_rps[LEFT] = Odometers::getLeftRps();
+        // PORTB |= (1<<5);
+        // Motors::setPwm(100, 100);
+        // Motors::setDirection(1, 1);
+        uint16_t rps;
+        static uint8_t left_pwm = 0;
+        static uint8_t right_pwm = 0;
+
+        //left
+        if(Odometers::leftRps(&rps)){
+            Mediator::real_rps[LEFT] = rps;
             Mediator::counter[LEFT] = Odometers::getLeftCounter();
-            uint16_t left_pwm = Mediator::pid[LEFT].update(
+            left_pwm = Mediator::pid[LEFT].update(
                     Mediator::set_rps[LEFT] < 0 ?
-                    -Mediator::set_rps[LEFT] :
-                    Mediator::set_rps[LEFT],
+                    -Mediator::set_rps[LEFT] : Mediator::set_rps[LEFT],
                     Mediator::real_rps[LEFT]);
-
-            //right
-            Mediator::real_rps[RIGHT] = Odometers::getRightRps();
-            Mediator::counter[RIGHT] = Odometers::getRightCounter();
-            uint16_t right_pwm = Mediator::pid[RIGHT].update(
-                    Mediator::set_rps[RIGHT] < 0 ?
-                    -Mediator::set_rps[RIGHT] :
-                    Mediator::set_rps[RIGHT],
-                    Mediator::real_rps[RIGHT]);
-
-
-            Motors::setPwm(left_pwm, right_pwm);
-            Motors::setDirection(Mediator::set_rps[LEFT],
-                                 Mediator::set_rps[RIGHT]);
-
-            last_time_ = Time::now();
         }
+
+        //right
+        if(Odometers::rightRps(&rps)){
+            Mediator::real_rps[RIGHT] = rps;
+            Mediator::counter[RIGHT] = Odometers::getRightCounter();
+            right_pwm = Mediator::pid[RIGHT].update(
+                    Mediator::set_rps[RIGHT] < 0 ?
+                    -Mediator::set_rps[RIGHT] : Mediator::set_rps[RIGHT],
+                    Mediator::real_rps[RIGHT]);
+        }
+
+        Motors::setPwm(left_pwm, right_pwm);
+        Motors::setDirection(Mediator::set_rps[LEFT],
+                             Mediator::set_rps[RIGHT]);
+
 
         //save pid settings
         if(Mediator::save_pid_settings_flag){
             savePidSettings();
+            Mediator::save_pid_settings_flag = false;
         }
     }
 
@@ -63,18 +66,18 @@ private:
     void savePidSettings()
     {
         eeprom_busy_wait();
-        eeprom_write_word(&ee_l_p_gain_x100_, Mediator::pid[LEFT].p_gain_x100);
+        eeprom_update_word(&ee_l_p_gain_x100_, Mediator::pid[LEFT].p_gain_x100);
         eeprom_busy_wait();
-        eeprom_write_word(&ee_l_i_gain_x100_, Mediator::pid[LEFT].i_gain_x100);
+        eeprom_update_word(&ee_l_i_gain_x100_, Mediator::pid[LEFT].i_gain_x100);
         eeprom_busy_wait();
-        eeprom_write_word(&ee_l_d_gain_x100_, Mediator::pid[LEFT].d_gain_x100);
+        eeprom_update_word(&ee_l_d_gain_x100_, Mediator::pid[LEFT].d_gain_x100);
         eeprom_busy_wait();
 
-        eeprom_write_word(&ee_r_p_gain_x100_, Mediator::pid[RIGHT].p_gain_x100);
+        eeprom_update_word(&ee_r_p_gain_x100_, Mediator::pid[RIGHT].p_gain_x100);
         eeprom_busy_wait();
-        eeprom_write_word(&ee_r_i_gain_x100_, Mediator::pid[RIGHT].i_gain_x100);
+        eeprom_update_word(&ee_r_i_gain_x100_, Mediator::pid[RIGHT].i_gain_x100);
         eeprom_busy_wait();
-        eeprom_write_word(&ee_r_d_gain_x100_, Mediator::pid[RIGHT].d_gain_x100);
+        eeprom_update_word(&ee_r_d_gain_x100_, Mediator::pid[RIGHT].d_gain_x100);
         eeprom_busy_wait();
     }
 
@@ -109,26 +112,23 @@ private:
 
 };
 
-template<typename Motors, typename Odometers, typename Time>
-uint16_t EEMEM MotorsController<Motors, Odometers, Time>::ee_l_p_gain_x100_ = 200;
+template<typename Motors, typename Odometers>
+uint16_t EEMEM MotorsController<Motors, Odometers>::ee_l_p_gain_x100_ = 200;
 
-template<typename Motors, typename Odometers, typename Time>
-uint16_t EEMEM MotorsController<Motors, Odometers, Time>::ee_l_i_gain_x100_ = 100;
+template<typename Motors, typename Odometers>
+uint16_t EEMEM MotorsController<Motors, Odometers>::ee_l_i_gain_x100_ = 100;
 
-template<typename Motors, typename Odometers, typename Time>
-uint16_t EEMEM MotorsController<Motors, Odometers, Time>::ee_l_d_gain_x100_ = 0;
+template<typename Motors, typename Odometers>
+uint16_t EEMEM MotorsController<Motors, Odometers>::ee_l_d_gain_x100_ = 0;
 
-template<typename Motors, typename Odometers, typename Time>
-uint16_t EEMEM MotorsController<Motors, Odometers, Time>::ee_r_p_gain_x100_ = 200;
+template<typename Motors, typename Odometers>
+uint16_t EEMEM MotorsController<Motors, Odometers>::ee_r_p_gain_x100_ = 200;
 
-template<typename Motors, typename Odometers, typename Time>
-uint16_t EEMEM MotorsController<Motors, Odometers, Time>::ee_r_i_gain_x100_ = 100;
+template<typename Motors, typename Odometers>
+uint16_t EEMEM MotorsController<Motors, Odometers>::ee_r_i_gain_x100_ = 100;
 
-template<typename Motors, typename Odometers, typename Time>
-uint16_t EEMEM MotorsController<Motors, Odometers, Time>::ee_r_d_gain_x100_ = 0;
-
-
-
+template<typename Motors, typename Odometers>
+uint16_t EEMEM MotorsController<Motors, Odometers>::ee_r_d_gain_x100_ = 0;
 
 
 #endif

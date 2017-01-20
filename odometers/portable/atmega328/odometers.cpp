@@ -1,16 +1,25 @@
 #include "odometers.h"
 
-extern volatile uint16_t Odometers::left_counter_;
-extern volatile uint16_t Odometers::right_counter_;
+extern volatile Odometers::CounterType Odometers::left_counter_;
+extern volatile Odometers::CounterType Odometers::right_counter_;
+extern volatile uint16_t Odometers::left_tc_;
+extern volatile bool     Odometers::is_left_tc_overflow_;
 extern volatile uint16_t Odometers::left_time_;
+extern volatile uint16_t Odometers::right_tc_;
+extern volatile bool     Odometers::is_right_tc_overflow_;
 extern volatile uint16_t Odometers::right_time_;
 
-ISR(TIMER1_CAPT_vect)
+ISR(INT0_vect)
 {
-    Odometers::captureInterrupt();
+    Odometers::leftOdometerInterrupt();
 }
 
-ISR(TIMER1_OVF_vect)
+ISR(INT1_vect)
 {
-    Odometers::overflowInterrupt();
+    Odometers::rightOdometerInterrupt();
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+    Odometers::timerInterrupt();
 }

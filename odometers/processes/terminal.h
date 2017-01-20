@@ -20,8 +20,7 @@
 typedef int16_t Ftype;
 
 template <
-    typename Serial,
-    typename Time
+    typename Serial
     >
 class Terminal
 {
