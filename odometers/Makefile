@@ -41,8 +41,8 @@
 
 
 # MCU name
-MCU = atmega328p
-
+# MCU = atmega328p
+MCU = atmega88p
 
 # Processor frequency.
 #     This will define a symbol, F_CPU, in all source code files equal to the
@@ -85,11 +85,21 @@ SRC =
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = ./main/$(TARGET).cpp \
-		 ./utils/pid.cpp \
-		 ./portable/atmega328/uart.cpp \
+		 ./utils/pid.cpp
+
+ifeq ($(MCU), atmega328p)
+CPPSRC += ./portable/atmega328/uart.cpp \
 		 ./portable/atmega328/motors.cpp \
 		 ./portable/atmega328/odometers.cpp \
 		 ./portable/atmega328/twi_slave.cpp
+endif
+
+ifeq ($(MCU), atmega88p)
+CPPSRC += ./portable/atmega88pa/uart.cpp \
+		 ./portable/atmega88pa/motors.cpp \
+		 ./portable/atmega88pa/odometers.cpp \
+		 ./portable/atmega88pa/twi_slave.cpp
+endif
 
 
 # List Assembler source files here.

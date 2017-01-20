@@ -7,16 +7,26 @@ extern "C"
 #include <string.h>
 }
 
-
-#include "portable/atmega328/uart.h"
-#include "portable/atmega328/motors.h"
-#include "portable/atmega328/odometers.h"
-#include "portable/atmega328/twi_slave.h"
+#include "../config.h"
 
 #include "processes/terminal.h"
 #include "processes/motors_controller.h"
 #include "processes/twi_interface.h"
 #include "processes/mediator.h"
+
+#ifdef __AVR_ATmega328P__
+#   include "portable/atmega328/uart.h"
+#   include "portable/atmega328/motors.h"
+#   include "portable/atmega328/odometers.h"
+#   include "portable/atmega328/twi_slave.h"
+#endif
+
+#ifdef __AVR_ATmega88PA__
+#   include "portable/atmega88pa/uart.h"
+#   include "portable/atmega88pa/motors.h"
+#   include "portable/atmega88pa/odometers.h"
+#   include "portable/atmega88pa/twi_slave.h"
+#endif
 
 //process
 Terminal<Serial> terminal;
@@ -27,9 +37,9 @@ static inline void hardwareInit()
     Serial::init();
     Motors::init();
     Odometers::init();
-    Twi::init(2);
+    Twi::init(TWI_DEVICE_ADDRESS);
 
-    DDRB |= (1<<5); //led
+    // DDRB |= (1<<5); //led
 
     sei();
 }
