@@ -41,7 +41,7 @@ static inline void hardwareInit()
     Twi::init(TWI_DEVICE_ADDRESS);
 
     // DDRB |= (1<<5); //led
-    // DDRC |= (1<<2) | (1<<3);
+    DDRC |= (1<<2) | (1<<3);
 
     sei();
 }

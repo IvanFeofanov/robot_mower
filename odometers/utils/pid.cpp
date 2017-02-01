@@ -27,7 +27,7 @@ Ftype Pid::update(uint16_t set_rps, uint16_t real_rps)
         i_state_ = i_min;
     }
 
-    uint32_t i_value = i_gain_x100 * i_state_;
+    int32_t i_value = i_gain_x100 * i_state_;
 
     Ftype summ = (p_value + i_value) / 100;
 

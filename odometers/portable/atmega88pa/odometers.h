@@ -34,6 +34,7 @@ public:
         TCCR1A = (0<<WGM11) | (0<<WGM10);
         TCCR1B = (1<<WGM12)| // pwm mode - CTC
                  (1<<CS10); // Clk/1
+
         OCR1A = 799; // 20000 hz
         TIMSK1 = (1<<OCIE1A); // Output compare A match interrupt Enable
     }
