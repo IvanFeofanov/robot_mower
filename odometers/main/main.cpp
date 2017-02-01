@@ -7,13 +7,6 @@ extern "C"
 #include <string.h>
 }
 
-#include "../config.h"
-
-#include "processes/terminal.h"
-#include "processes/motors_controller.h"
-#include "processes/twi_interface.h"
-#include "processes/mediator.h"
-
 #ifdef __AVR_ATmega328P__
 #   include "portable/atmega328/uart.h"
 #   include "portable/atmega328/motors.h"
@@ -21,12 +14,20 @@ extern "C"
 #   include "portable/atmega328/twi_slave.h"
 #endif
 
-#ifdef __AVR_ATmega88PA__
+#ifdef __AVR_ATmega88P__
 #   include "portable/atmega88pa/uart.h"
 #   include "portable/atmega88pa/motors.h"
 #   include "portable/atmega88pa/odometers.h"
 #   include "portable/atmega88pa/twi_slave.h"
 #endif
+
+#include "../config.h"
+
+#include "processes/terminal.h"
+#include "processes/motors_controller.h"
+#include "processes/twi_interface.h"
+#include "processes/mediator.h"
+
 
 //process
 Terminal<Serial> terminal;
@@ -40,6 +41,7 @@ static inline void hardwareInit()
     Twi::init(TWI_DEVICE_ADDRESS);
 
     // DDRB |= (1<<5); //led
+    // DDRC |= (1<<2) | (1<<3);
 
     sei();
 }
@@ -78,8 +80,6 @@ int main()
 
     while(true){
         loop();
-        // PORTB ^= (1<<5);
-        // _delay_ms(50);
     }
 
     return 0;
