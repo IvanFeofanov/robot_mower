@@ -16,11 +16,6 @@ public:
 
     void run(const uint8_t* status)
     {
-        // static uint32_t last_time = 0;
-        // if(Time::now() - last_time > 500){
-        //     LedPin::toggle();
-        //     last_time = Time::now();
-        // }
         if(*status){
             LedPin::setHigh();
         }else{
