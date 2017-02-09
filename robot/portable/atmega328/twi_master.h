@@ -26,15 +26,23 @@ public:
 
         status_ = STATUS_READY;
 
+        transfer_buffer_ = 0;
+        transfer_buffer_size_ = 0;
+        transfer_buffer_current_index_ =0;
+        slave_address_ = 0;
+        receive_buffer_ = 0;
+        receive_buffer_size_ = 0;
+        receive_buffer_current_index_ = 0;
+
         // work_log_index_ = 0;
     }
 
     static void write(uint8_t address, uint8_t* buffer, uint8_t size)
     {
+        slave_address_ = address;
         transfer_buffer_ = buffer;
         transfer_buffer_size_ = size;
         transfer_buffer_current_index_ = 0;
-        slave_address_ = address;
 
         status_ = STATUS_TRANSFERRING;
 
@@ -67,9 +75,9 @@ public:
     }
 
 
-    static uint8_t getStatus()
+    static bool isReady()
     {
-        return status_;
+        return status_ == STATUS_READY;
     }
 
 public:
@@ -95,7 +103,6 @@ public:
 
         case 0x10: //restart
             TWDR = (slave_address_ << 1) | (1<<TWD0);
-
             TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE);
             break;
 
@@ -106,7 +113,7 @@ public:
             break;
 
         case 0x20: //SLA+W NACK
-            // PORTB |= (1<<5);
+            status_ = STATUS_READY;
             break;
 
         case 0x28: //байт был послан и получен ACK
@@ -133,9 +140,11 @@ public:
             break;
 
         case 0x30: //байт был послан но получен NACK
+            status_ = STATUS_READY;
             break;
 
         case 0x38: //арбитраж был проигран
+            status_ = STATUS_READY;
             // PORTB |= (1<<5);
             break;
 
@@ -144,7 +153,7 @@ public:
             break;
 
         case 0x48: //SLA+R NACK
-            // PORTB |= (1<<4);
+            status_ = STATUS_READY;
             break;
 
         case 0x50: //data byte has ben received ACK
@@ -161,6 +170,8 @@ public:
             status_ = STATUS_READY;
             TWCR = (1<<TWINT) | (1<<TWEN) | (0<<TWIE) | (1<<TWSTO);
             break;
+        default:
+            status_ = STATUS_READY;
         }
     }
 
