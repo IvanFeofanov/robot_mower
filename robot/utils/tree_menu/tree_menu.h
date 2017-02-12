@@ -11,7 +11,7 @@ public:
     TreeMenu();
     TreeMenu(MenuItem* root_item, uint8_t* var_state_ptr, uint16_t state_print_help);
     bool select(MenuItem::IdType id);
-    void getHelpOneLine(char* buffer);
+    void getHelpLine(char* buffer);
 
 private:
     void toParent();

@@ -1,7 +1,8 @@
 #ifndef MENU_ITEM_H
 #define MENU_ITEM_H
 
-class  MenuItem
+
+class MenuItem
 {
 public:
     typedef char IdType;

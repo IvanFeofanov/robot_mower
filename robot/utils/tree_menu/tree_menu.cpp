@@ -48,7 +48,7 @@ bool TreeMenu::select(MenuItem::IdType id)
     return false;
 }
 
-void TreeMenu::getHelpOneLine(char* buffer)
+void TreeMenu::getHelpLine(char* buffer)
 {
     switch(print_help_state_)
     {

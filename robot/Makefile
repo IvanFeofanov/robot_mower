@@ -85,13 +85,14 @@ SRC =
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = ./main/$(TARGET).cpp \
+		 ./main/robot.cpp \
 		 ./portable/atmega328/uart.cpp \
 		 ./portable/atmega328/time.cpp \
 		 ./portable/atmega328/twi_master.cpp \
 		 ./utils/pid.cpp \
 		 ./utils/map.cpp \
-		 ./utils/menu_item.cpp \
-		 ./utils/tree_menu.cpp
+		 ./utils/tree_menu/menu_item.cpp \
+		 ./utils/tree_menu/tree_menu.cpp
 
 
 # List Assembler source files here.
