@@ -14,27 +14,36 @@ enum{
     ADC_SAMPLE_RATE_38462
 };
 
+struct AdcSlot
+{
+    uint16_t* capture_buffer;
+    uint16_t capture_size;
+    uint8_t channel;
+    bool is_complate;
+};
+
 template<
-    uint8_t CHANNELS,
+    uint8_t SLOTS,
     uint8_t SAMPLE_RATE
     >
 class AdcMan
 {
 public:
+    enum{
+        ADC0 = 0x00,
+        ADC1 = 0x01,
+        ADC2 = 0x02,
+        ADC3 = 0x03
+    };
+
     static inline void init()
     {
-        current_index_ = 0;
+        ADMUX |= (1<<REFS0); //voltage reference - AVcc
 
-        for(int i = 0; i < CHANNELS; i++){
-            capture_complate_[i] = false;
-        }
+        ADCSRA |= (1<<ADIE)     //ADC interrupt enable
+               | (1<<ADATE);    //ADC auto trigger enable
 
-        ADMUX |= (1<<REFS0) | (1<<ADLAR); //voltage reference - AVcc
-
-        ADCSRA |= (1<<ADEN)      // ADC enable
-               | (1<<ADIE);       // interrupt enable
-
-        //prescaler selection
+        //prescaler selection (for F_CPU = 16Mhz)
         if(SAMPLE_RATE == ADC_SAMPLE_RATE_19231)
             ADCSRA |= (1<<ADPS2) | (1<<ADPS1) | (0<<ADPS0); //64
         else if(SAMPLE_RATE == ADC_SAMPLE_RATE_38462)
@@ -42,69 +51,111 @@ public:
         else //9615
             ADCSRA |= (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0); //128
 
-        ADCSRA |= (1<<ADSC); //start conv
-
-    }
-
-    static uint8_t getResult(uint8_t index)
-    {
-        uint8_t value;
-
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
-        {
-            value = capture_[index];
-            capture_[index] = 0;
-            capture_complate_[index] = false;
+        //set default value
+        for(int i = 0; i < SLOTS; i++){
+            slots_[i].is_complate = true;
+            slots_[i].channel = ADC0;
+            slots_[i].capture_size = 0;
         }
 
-        return value;
+        capture_index_ = 0;
+        current_slot_ = 0;
+
+        setChannel(ADC0);
+        startConv();
+
     }
 
-    static bool isCaptureComplate(uint8_t index)
+    static void setSlot(uint8_t slot, uint8_t channel,
+            uint16_t* capture_buffer, uint8_t capture_size)
+    {
+        slots_[slot].channel = channel;
+        slots_[slot].capture_buffer = capture_buffer;
+        slots_[slot].capture_size = capture_size;
+    }
+
+    static void startCapture(uint8_t slot)
+    {
+        slots_[slot].is_complate = false;
+    }
+
+    static uint16_t* getResult(uint8_t slot)
+    {
+        return slots_[slot].capture_buffer;
+    }
+
+    static bool isCaptureComplate(uint8_t slot)
     {
         bool is_complate;
 
         ATOMIC_BLOCK(ATOMIC_FORCEON)
         {
-            is_complate = capture_complate_[index];
+            is_complate = slots_[slot].is_complate;
         }
 
         return is_complate;
     }
 
-public:
     static inline void interruptHandler()
     {
-        capture_[current_index_] = ADCH;
-        capture_complate_[current_index_] = true;
-
-        if(current_index_ >= CHANNELS-1){
-            current_index_ = 0;
-        }else{
-            current_index_++;
+        if(slots_[current_slot_].is_complate ||
+                capture_index_ >= slots_[current_slot_].capture_size){
+            slots_[current_slot_].is_complate = true;
+            capture_index_ = 0;
+            stopConv();
+            nextSlot();
+            startConv();
+            return;
         }
 
-        ADMUX = (ADMUX & 0b11110000) | current_index_;
-
-        ADCSRA |= (1<<ADSC); //start conv
+        slots_[current_slot_].capture_buffer[capture_index_] = ADC;
+        capture_index_++;
     }
 
+private:
+    static inline void startConv()
+    {
+        ADCSRA |= (1<<ADEN);
+        ADCSRA |= (1<<ADSC);
+    }
+
+    static inline void stopConv()
+    {
+        ADCSRA &= ~(1<<ADEN);
+    }
+
+    static inline void setChannel(uint8_t channel)
+    {
+        ADMUX = (ADMUX & 0b11110000) | channel;
+    }
+
+    static inline void nextSlot()
+    {
+        if(current_slot_ < SLOTS - 1){
+            current_slot_++;
+        }else{
+            current_slot_ = 0;
+        }
+
+        setChannel(slots_[current_slot_].channel);
+    }
 
 private:
-    volatile static uint8_t capture_[CHANNELS];
-    volatile static bool capture_complate_[CHANNELS];
-    volatile static uint8_t current_index_;
+    volatile static AdcSlot slots_[SLOTS];
+    volatile static uint8_t current_slot_;
+    volatile static uint16_t capture_index_;
 };
 
-template<uint8_t CHANNELS, uint8_t SAMPLE_RATE>
-volatile uint8_t AdcMan<CHANNELS, SAMPLE_RATE>::capture_[CHANNELS];
+template<uint8_t SLOTS, uint8_t SAMPLE_RATE>
+volatile AdcSlot AdcMan<SLOTS, SAMPLE_RATE>::slots_[SLOTS];
 
-template<uint8_t CHANNELS, uint8_t SAMPLE_RATE>
-volatile bool AdcMan<CHANNELS, SAMPLE_RATE>::capture_complate_[CHANNELS];
+template<uint8_t SLOTS, uint8_t SAMPLE_RATE>
+volatile uint8_t AdcMan<SLOTS, SAMPLE_RATE>::current_slot_;
 
-template<uint8_t CHANNELS, uint8_t SAMPLE_RATE>
-volatile uint8_t AdcMan<CHANNELS, SAMPLE_RATE>::current_index_;
+template<uint8_t SLOTS, uint8_t SAMPLE_RATE>
+volatile uint16_t AdcMan<SLOTS, SAMPLE_RATE>::capture_index_;
 
-typedef AdcMan<2, ADC_SAMPLE_RATE_9615> Adc;
+
+typedef AdcMan<3, ADC_SAMPLE_RATE_9615> Adc;
 
 #endif

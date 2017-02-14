@@ -8,9 +8,11 @@
 #include "portable/atmega328/twi_master.h"
 #include "portable/atmega328/pio.h"
 #include "portable/atmega328/mower_motor.h"
+#include "portable/atmega328/adc_man.h"
 
 #include "processes/terminal.h"
 #include "processes/button.h"
+#include "processes/bumper.h"
 #include "processes/led_indicator.h"
 #include "processes/mower.h"
 #include "processes/drive_motors.h"
@@ -30,8 +32,9 @@ private:
 
     //process
     Terminal<Serial, Time> terminal_;
-    LedIndiactor<LedPin, Time> led_indicator_;
     Button<ButtonPin, Time> button_;
+    Bumper<Time, Adc, Adc::ADC0, Adc::ADC1> bumper_;
+    LedIndiactor<LedPin, Time> led_indicator_;
     Mower<MowerMotor, Time> mower_;
     DriveMotors<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> drive_motors_;
 
@@ -39,6 +42,7 @@ private:
     uint8_t status_;
     MowerMsg mower_msg_;
     DriveMotorsMsg drive_motors_msg_;
+    BumperMsg bumper_msg_;
 
 };
 

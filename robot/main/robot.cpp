@@ -7,12 +7,14 @@ void Robot::init()
     Time::init();
     TwiMaster::init();
     MowerMotor::init();
+    Adc::init();
 
     sei();
 
     //processes
     terminal_.init();
     button_.init();
+    bumper_.init();
     led_indicator_.init();
     mower_.init();
     drive_motors_.init();
@@ -31,13 +33,26 @@ void Robot::init()
     drive_motors_msg_.right_real_speed = 0;
     drive_motors_msg_.left_counter = 0;
     drive_motors_msg_.right_counter = 0;
+
+    //bumper
+    bumper_msg_.left = 0;
+    bumper_msg_.left_min = 0;
+    bumper_msg_.left_max = 1023;
+
+    bumper_msg_.right = 0;
+    bumper_msg_.right_min = 0;
+    bumper_msg_.right_max = 1023;
+
+    bumper_msg_.is_calibration = false;
 }
 
 void Robot::loop()
 {
-    terminal_.run(&status_, &mower_msg_, &drive_motors_msg_);
+    terminal_.run(&status_, &mower_msg_, &drive_motors_msg_, &bumper_msg_);
 
     button_.run(&status_);
+
+    bumper_.run(&bumper_msg_);
 
     led_indicator_.run(&status_);
 
