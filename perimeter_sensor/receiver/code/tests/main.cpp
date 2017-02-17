@@ -28,19 +28,29 @@ void setup()
 
 }
 
+
 void loop()
 {
     char buffer[64];
+    static uint32_t last_time = 0;
+    static uint16_t counter = 0;
 
     if(AdcMan::isCaptureComplate())
     {
         receiver.calculate((int16_t*)AdcMan::capture_value);
-
-        sprintf(buffer, "%d\n", receiver.getMagnitude());
-        hardware.write(buffer, strlen(buffer));
+        counter++;
 
         AdcMan::start();
     }
+
+    if(hardware.time() - last_time >= 1000){
+        sprintf(buffer, "%d\n", counter);
+        hardware.write(buffer, strlen(buffer));
+
+        counter = 0;
+        last_time = hardware.time();
+    }
+
 }
 
 

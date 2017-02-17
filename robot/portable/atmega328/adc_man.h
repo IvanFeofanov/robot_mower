@@ -8,6 +8,7 @@ extern "C"
 #include <util/atomic.h>
 }
 
+
 enum{
     ADC_SAMPLE_RATE_9615,
     ADC_SAMPLE_RATE_19231,
@@ -34,6 +35,10 @@ public:
         ADC1 = 0x01,
         ADC2 = 0x02,
         ADC3 = 0x03
+    };
+
+    enum{
+        ADC_SAMPLE_RATE = SAMPLE_RATE
     };
 
     static inline void init()
@@ -156,6 +161,43 @@ template<uint8_t SLOTS, uint8_t SAMPLE_RATE>
 volatile uint16_t AdcMan<SLOTS, SAMPLE_RATE>::capture_index_;
 
 
-typedef AdcMan<3, ADC_SAMPLE_RATE_9615> Adc;
+template<
+    typename AdcMan,
+    uint8_t CHANNEL,
+    uint8_t SLOT
+    >
+class AdcChannel
+{
+public:
+    typedef AdcMan Man;
+
+    static inline void setSlot(uint16_t* capture_buffer, uint8_t capture_size)
+    {
+        AdcMan::setSlot(SLOT, CHANNEL, capture_buffer, capture_size);
+    }
+
+    static inline void startCapture()
+    {
+        AdcMan::startCapture(SLOT);
+    }
+
+    static inline uint16_t* getResult()
+    {
+        return AdcMan::getResult(SLOT);
+    }
+
+    static inline bool isCaptureComplate()
+    {
+        return AdcMan::isCaptureComplate(SLOT);
+    }
+
+};
+
+typedef AdcMan<3, ADC_SAMPLE_RATE_19231> Adc;
+
+typedef AdcChannel<Adc, Adc::ADC0, 0> Adc0;
+typedef AdcChannel<Adc, Adc::ADC1, 1> Adc1;
+typedef AdcChannel<Adc, Adc::ADC2, 2> Adc2;
+typedef AdcChannel<Adc, Adc::ADC3, 3> Adc3;
 
 #endif

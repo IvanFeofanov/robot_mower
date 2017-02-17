@@ -25,21 +25,32 @@ public:
 
         //make menu
         root_item_             = MenuItem(0, "Main menu");
-        print_motors_item_     =  ToStateMenuItem('0', "print motors",
+        print_motors_item_     =    ToStateMenuItem('0', "print motors",
                 &state_, state_print_drive_motors);
-        print_toi_item_        =  ToStateMenuItem('1', "print toi",
+        print_toi_item_        =    ToStateMenuItem('1', "print toi",
                 &state_, state_print_toi);
-        bumper_item_           =  MenuItem('2', "bumper");
-        print_bumper_item_     =   ToStateMenuItem('0', "print bumper",
+        bumper_item_           =    MenuItem('2', "bumper");
+        print_bumper_item_     =        ToStateMenuItem('0', "print bumper",
                 &state_, state_print_bumper);
-        calib_bumper_item_     =   ToStateMenuItem('1', "calib bumper",
+        calib_bumper_item_     =        ToStateMenuItem('1', "calib bumper",
                 &state_, state_calib_bumper);
+        perimeter_item_        =    MenuItem('3', "perimeter");
+        print_perimeter_lps_item_   =        ToStateMenuItem('0', "lps",
+                &state_, state_print_perimeter_lps);
+        print_perimeter_item_ =         ToStateMenuItem('1', "perimeter",
+                &state_, state_print_perimeter);
+        calib_perimeter_item_ =         ToStateMenuItem('2', "calib",
+                &state_, state_calib_perimeter);
 
         root_item_.addChild(&print_motors_item_);
         print_motors_item_.addNext(&print_toi_item_);
         print_toi_item_.addNext(&bumper_item_);
         bumper_item_.addChild(&print_bumper_item_);
         print_bumper_item_.addNext(&calib_bumper_item_);
+        bumper_item_.addNext(&perimeter_item_);
+        perimeter_item_.addChild(&print_perimeter_lps_item_);
+        print_perimeter_lps_item_.addNext(&print_perimeter_item_);
+        print_perimeter_item_.addNext(&calib_perimeter_item_);
 
         menu_ = TreeMenu(&root_item_, &state_, state_print_help);
     }
@@ -47,7 +58,8 @@ public:
     void run(uint8_t* status,
             MowerMsg* mower_msg,
             DriveMotorsMsg* motors_msg,
-            BumperMsg* bumper_msg)
+            BumperMsg* bumper_msg,
+            PerimeterSensorMsg* perimeter_msg)
     {
         uint32_t toi = getToi();
 
@@ -89,6 +101,7 @@ public:
             transfering_next_state_ = state_wait_begin_symbol;
             break;
 
+        //bumper
         case state_print_bumper:
             sprintf(buffer_, "left=%d right=%d\n", bumper_msg->left, bumper_msg->right);
             Serial::write(buffer_, strlen(buffer_));
@@ -122,6 +135,36 @@ public:
             transfering_next_state_ = state_wait_begin_symbol;
             break;
 
+        //perimeter
+        case state_print_perimeter_lps:
+            sprintf(buffer_, "lps=%d\n", perimeter_msg->lps);
+            Serial::write(buffer_, strlen(buffer_));
+            state_ = state_transfering;
+            transfering_next_state_ = state_wait_begin_symbol;
+            break;
+
+        case state_print_perimeter:
+            sprintf(buffer_, "mag=%d\n", perimeter_msg->magnitude);
+            Serial::write(buffer_, strlen(buffer_));
+            state_ = state_transfering;
+            transfering_next_state_ = state_wait_begin_symbol;
+            break;
+
+        case state_calib_perimeter:
+            perimeter_msg->is_offset_calibration_mode = true;
+            state_ = state_end_calib_perimeter;
+            break;
+
+        case state_end_calib_perimeter:
+            if(!perimeter_msg->is_offset_calibration_mode){
+                sprintf(buffer_, "offset=%d\n", perimeter_msg->signal_offset);
+                Serial::write(buffer_, strlen(buffer_));
+                state_ = state_transfering;
+                transfering_next_state_ = state_wait_begin_symbol;
+            }
+            break;
+
+        //menu help
         case state_print_help:
             menu_.getHelpLine(buffer_);
             if(buffer_[0] == '\0'){
@@ -177,11 +220,16 @@ private:
 
         state_print_drive_motors,
         state_print_toi,
-        state_print_bumper,
 
+        state_print_bumper,
         state_calib_bumper,
         state_wait_end_calib,
         state_end_calib,
+
+        state_print_perimeter_lps,
+        state_print_perimeter,
+        state_calib_perimeter,
+        state_end_calib_perimeter,
 
         state_print_help,
         state_transfering,
@@ -204,6 +252,10 @@ private:
     MenuItem        bumper_item_;
     ToStateMenuItem print_bumper_item_;
     ToStateMenuItem calib_bumper_item_;
+    MenuItem        perimeter_item_;
+    ToStateMenuItem print_perimeter_lps_item_;
+    ToStateMenuItem print_perimeter_item_;
+    ToStateMenuItem calib_perimeter_item_;
 
 };
 

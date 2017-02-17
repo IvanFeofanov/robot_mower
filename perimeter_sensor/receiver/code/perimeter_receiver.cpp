@@ -1,5 +1,6 @@
 #include "perimeter_receiver.h"
 #include <avr/io.h>
+
 PerimeterReceiver::PerimeterReceiver()
 {
     offset_             = 512; //2^10 / 2
@@ -92,7 +93,7 @@ int32_t PerimeterReceiver::correlationFilter(   const int16_t* input_array,
     int32_t max_value = 0;
     int32_t min_value = 0;
 
-    for(int shift = 0; shift < input_array_size - sigcode_size * n_subsamples; shift++)
+    for(uint16_t shift = 0; shift < input_array_size - sigcode_size * n_subsamples; shift++)
     {
         int32_t sum_val = 0;
         uint8_t subsample = 0;

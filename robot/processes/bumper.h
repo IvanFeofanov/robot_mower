@@ -6,9 +6,8 @@
 
 template<
     typename Time,
-    typename Adc,
-    uint8_t LEFT_POT,
-    uint8_t RIGHT_POT
+    typename AdcLeftPot,
+    typename AdcRightPot
     >
 class Bumper
 {
@@ -19,11 +18,11 @@ public:
         right_value_ = 0;
         last_calibration_flag_ = false;
 
-        Adc::setSlot(LEFT_POT, LEFT_POT, &left_value_, 1);
-        Adc::setSlot(RIGHT_POT, RIGHT_POT, &right_value_, 1);
+        AdcLeftPot::setSlot(&left_value_, 1);
+        AdcRightPot::setSlot(&right_value_, 1);
 
-        Adc::startCapture(LEFT_POT);
-        Adc::startCapture(RIGHT_POT);
+        AdcLeftPot::startCapture();
+        AdcRightPot::startCapture();
     }
 
     void run(BumperMsg* bumper_msg)
@@ -31,14 +30,14 @@ public:
         uint16_t tmp_left = 0;
         uint16_t tmp_right = 0;
 
-        if(Adc::isCaptureComplate(LEFT_POT)){
+        if(AdcLeftPot::isCaptureComplate()){
             tmp_left = left_value_;
-            Adc::startCapture(LEFT_POT);
+            AdcLeftPot::startCapture();
         }
 
-        if(Adc::isCaptureComplate(RIGHT_POT)){
+        if(AdcRightPot::isCaptureComplate()){
             tmp_right = right_value_;
-            Adc::startCapture(RIGHT_POT);
+            AdcRightPot::startCapture();
         }
 
         if(bumper_msg->is_calibration){ // calibration mode
