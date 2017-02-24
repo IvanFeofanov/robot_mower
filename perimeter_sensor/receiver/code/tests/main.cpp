@@ -38,18 +38,20 @@ void loop()
     if(AdcMan::isCaptureComplate())
     {
         receiver.calculate((int16_t*)AdcMan::capture_value);
+        int16_t value = receiver.getSmoothMagnitude();
         counter++;
-
+        sprintf(buffer, "%d\n", value);
+        hardware.write(buffer, strlen(buffer));
         AdcMan::start();
     }
 
-    if(hardware.time() - last_time >= 1000){
-        sprintf(buffer, "%d\n", counter);
-        hardware.write(buffer, strlen(buffer));
-
-        counter = 0;
-        last_time = hardware.time();
-    }
+    // if(hardware.time() - last_time >= 1000){
+    //     sprintf(buffer, "%d\n", counter);
+    //     hardware.write(buffer, strlen(buffer));
+    //
+    //     counter = 0;
+    //     last_time = hardware.time();
+    // }
 
 }
 
