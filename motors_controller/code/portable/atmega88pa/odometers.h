@@ -9,7 +9,7 @@ extern "C"
 }
 
 #define INTERRUPTS_PER_ROTATION (2)
-#define MAX_TIME (50000) //uS
+#define MAX_TIME (5000) //uS
 
 class Odometers
 {

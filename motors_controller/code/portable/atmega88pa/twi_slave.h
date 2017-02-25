@@ -75,18 +75,19 @@ public:
         case 0x90: //Receive byte broadcast
         case 0x80: //Receive byte
             receive_buffer_[receive_buffer_write_index_] = TWDR;
+            receive_buffer_write_index_++;
 
-            if(receive_buffer_write_index_+2 >= BUFFER_SIZE){
+            if(receive_buffer_write_index_ + 1 >= BUFFER_SIZE){
                 TWCR = (1<<TWINT) | (0<<TWEA) | (1<<TWEN) | (1<<TWIE);
             }else{
                 TWCR = (1<<TWINT) | (1<<TWEA) | (1<<TWEN) | (1<<TWIE);
-                receive_buffer_write_index_++;
             }
             break;
 
         case 0x98: //Receive last byte broadcast
         case 0x88: //Receive last byte
             receive_buffer_[receive_buffer_write_index_] = TWDR;
+            receive_buffer_write_index_++;
             if(receive_event_ptr_ != 0){
                 receive_event_ptr_((uint8_t*)receive_buffer_, receive_buffer_write_index_);
             }

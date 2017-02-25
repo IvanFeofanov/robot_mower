@@ -26,6 +26,7 @@ private:
             Mediator::set_rps[Mediator::LEFT_MOTOR] = (data[1] << 8) | data[2];
             //right
             Mediator::set_rps[Mediator::RIGHT_MOTOR] = (data[3] << 8) | data[4];
+            // Mediator::set_rps[Mediator::RIGHT_MOTOR] = 90;
             break;
 
         default:

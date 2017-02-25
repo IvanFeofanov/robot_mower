@@ -32,6 +32,7 @@ public:
         static uint8_t right_pwm = 0;
 
         //left
+        // Mediator::set_rps[LEFT] = 90;
         if(Odometers::leftRps(&rps)){
             Mediator::real_rps[LEFT] = rps;
             Mediator::counter[LEFT] = Odometers::getLeftCounter();
@@ -42,6 +43,7 @@ public:
         }
 
         //right
+        // Mediator::set_rps[RIGHT] = 90;
         if(Odometers::rightRps(&rps)){
             Mediator::real_rps[RIGHT] = rps;
             Mediator::counter[RIGHT] = Odometers::getRightCounter();
