@@ -16,7 +16,8 @@ public:
     {
         left_value_ = 0;
         right_value_ = 0;
-        last_calibration_flag_ = false;
+        left_calibration_flag_ = false;
+        right_calibration_flag_ = false;
 
         AdcLeftPot::setSlot(&left_value_, 1);
         AdcRightPot::setSlot(&right_value_, 1);
@@ -27,54 +28,51 @@ public:
 
     void run(BumperMsg* bumper_msg)
     {
-        uint16_t tmp_left = 0;
-        uint16_t tmp_right = 0;
-
         if(AdcLeftPot::isCaptureComplate()){
-            tmp_left = left_value_;
+            if(bumper_msg->is_calibration){
+                if(left_calibration_flag_){
+                    if(left_value_ > bumper_msg->left_max){
+                        bumper_msg->left_max = left_value_;
+                    }
+                    if(left_value_ < bumper_msg->left_min){
+                        bumper_msg->left_min = left_value_;
+                    }
+                }else{
+                    bumper_msg->left_max = left_value_;
+                    bumper_msg->left_min = left_value_;
+                }
+            }else{ //normal mode
+                bumper_msg->left = map(left_value_, bumper_msg->left_min,
+                    bumper_msg->left_max, 0, 255);
+            }
+
+            left_calibration_flag_ = bumper_msg->is_calibration;
+
             AdcLeftPot::startCapture();
         }
 
         if(AdcRightPot::isCaptureComplate()){
-            tmp_right = right_value_;
+            if(bumper_msg->is_calibration){
+                if(right_calibration_flag_){
+                    if(right_value_ > bumper_msg->right_max){
+                        bumper_msg->right_max = right_value_;
+                    }
+                    if(right_value_ < bumper_msg->right_min){
+                        bumper_msg->right_min = right_value_;
+                    }
+                }else{
+                    bumper_msg->right_max = right_value_;
+                    bumper_msg->right_min = right_value_;
+                }
+            }else{ //normal mode
+                bumper_msg->right = map(right_value_, bumper_msg->right_min,
+                    bumper_msg->right_max, 0, 255);
+            }
+
+            right_calibration_flag_ = bumper_msg->is_calibration;
+
             AdcRightPot::startCapture();
         }
-
-        if(bumper_msg->is_calibration){ // calibration mode
-            if(last_calibration_flag_){
-                // left
-                if(tmp_left > bumper_msg->left_max){
-                    bumper_msg->left_max = tmp_left;
-                }
-                if(tmp_left < bumper_msg->left_min){
-                    bumper_msg->left_min = tmp_left;
-                }
-
-                //right
-                if(tmp_right > bumper_msg->right_max){
-                    bumper_msg->right_max = tmp_right;
-                }
-                if(tmp_right < bumper_msg->right_min){
-                    bumper_msg->right_min = tmp_right;
-                }
-
-            }else{ // if first calibration
-                // left
-                bumper_msg->left_max = tmp_left;
-                bumper_msg->left_min = tmp_left;
-
-                // right
-                bumper_msg->right_max = tmp_right;
-                bumper_msg->right_min = tmp_right;
-            }
-        }else{ // normal mode
-            bumper_msg->left = map(tmp_left, bumper_msg->left_min,
-                    bumper_msg->left_max, 0, 255);
-            bumper_msg->right = map(tmp_right, bumper_msg->right_min,
-                    bumper_msg->right_max, 0, 255);
-        }
-
-        last_calibration_flag_ = bumper_msg->is_calibration;
 
     }
 
@@ -82,7 +80,8 @@ private:
     uint16_t left_value_;
     uint16_t right_value_;
 
-    bool last_calibration_flag_;
+    bool left_calibration_flag_;
+    bool right_calibration_flag_;
 };
 
 #endif

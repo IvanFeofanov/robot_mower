@@ -141,8 +141,8 @@ public:
             break;
 
         case state_save:
-            Mediator::save_pid_settings_flag = true;
-            state_ = state_wait_begin_symbol;
+            // Mediator::save_pid_settings_flag = true;
+            // state_ = state_wait_begin_symbol;
             break;
 
         case state_transfering:

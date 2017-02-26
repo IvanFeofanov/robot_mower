@@ -1,6 +1,8 @@
 #ifndef PID_H
 #define PID_H
 
+#include <stdint.h>
+
 class Pid
 {
 public:

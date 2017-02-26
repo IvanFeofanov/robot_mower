@@ -606,6 +606,9 @@ clean_list :
 	$(REMOVE) $(TARGET).map
 	$(REMOVE) $(TARGET).sym
 	$(REMOVE) $(TARGET).lss
+	$(REMOVE) portable/atmega328/*.o
+	$(REMOVE) main/*.o
+	$(REMOVE) utils/*.o
 	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.o)
 	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.lst)
 	$(REMOVE) $(SRC:.c=.s)

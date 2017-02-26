@@ -3,6 +3,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/atomic.h>
 
 class TwiMaster
 {
@@ -77,7 +78,13 @@ public:
 
     static bool isReady()
     {
-        return status_ == STATUS_READY;
+        bool is_ready = false;
+
+        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        {
+            is_ready = status_ == STATUS_READY;
+        }
+        return is_ready;
     }
 
 public:
@@ -95,8 +102,9 @@ public:
         case 0x08: //start
             TWDR = (slave_address_ << 1);
 
-            if(transfer_buffer_size_ == 0)
+            if(transfer_buffer_size_ == 0){
                 TWDR |= (1<<TWD0); //read
+            }
 
             TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWIE);
             break;
@@ -113,6 +121,7 @@ public:
             break;
 
         case 0x20: //SLA+W NACK
+            TWCR = (1<<TWINT) | (1<<TWEN) | (0<<TWIE) | (1<<TWSTO);
             status_ = STATUS_READY;
             break;
 
@@ -126,7 +135,7 @@ public:
                 {
                 case STATUS_TRANSFERRING:
                     //stop
-                    TWCR = (1<<TWINT) | (1<<TWEN) | (0<<TWIE) | (TWSTO);
+                    TWCR = (1<<TWINT) | (1<<TWEN) | (0<<TWIE) | (1<<TWSTO);
                     status_ = STATUS_READY;
                     break;
 
@@ -141,11 +150,11 @@ public:
 
         case 0x30: //байт был послан но получен NACK
             status_ = STATUS_READY;
+            TWCR = (1<<TWINT) | (1<<TWEN) | (0<<TWIE) | (1<<TWSTO);
             break;
 
         case 0x38: //арбитраж был проигран
             status_ = STATUS_READY;
-            // PORTB |= (1<<5);
             break;
 
         case 0x40: //SLA+R ACK
@@ -175,8 +184,8 @@ public:
         }
     }
 
-volatile static uint8_t work_log_[20];
-volatile static uint8_t work_log_index_;
+// volatile static uint8_t work_log_[20];
+// volatile static uint8_t work_log_index_;
 
 private:
     static uint8_t* transfer_buffer_;

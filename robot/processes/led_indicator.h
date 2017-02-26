@@ -17,9 +17,9 @@ public:
     void run(const uint8_t* status)
     {
         if(*status){
-            LedPin::setHigh();
+            // LedPin::setHigh();
         }else{
-            LedPin::setLow();
+            // LedPin::setLow();
         }
     }
 

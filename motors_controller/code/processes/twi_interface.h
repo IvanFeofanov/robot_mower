@@ -19,6 +19,8 @@ public:
 private:
     static void setValueCb(uint8_t* data, uint8_t length)
     {
+        PORTC ^= (1<<2);
+
         switch(data[0])
         {
         case RPS:
@@ -36,6 +38,8 @@ private:
 
     static void getValueCb(uint8_t* request, uint8_t length)
     {
+        PORTC ^= (1<<2);
+
         switch(request[0])
         {
         case RPS:

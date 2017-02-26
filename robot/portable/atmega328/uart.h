@@ -58,6 +58,7 @@ public:
 
         transfer_buffer_ptr_    = 0;
         transfer_buffer_index_  = 0;
+        transfer_buffer_length_  = 0;
     }
 
     static bool write(const void* buffer, uint16_t length)

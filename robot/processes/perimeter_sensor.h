@@ -76,6 +76,9 @@ public:
                     msg->magnitude *= -1;
                 }
 
+                msg->is_inside = msg->magnitude >= 0;
+                msg->is_new_data = true;
+
                 loops_counter_++;
 
                 state_ = state_set_offset;

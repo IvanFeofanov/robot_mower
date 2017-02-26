@@ -49,7 +49,7 @@ public:
         RIGHT_PWM = right;
     }
 
-    static void setDirection(int8_t left, uint8_t right)
+    static void setDirection(int8_t left, int8_t right)
     {
         //left
         M_L_1_LOW;

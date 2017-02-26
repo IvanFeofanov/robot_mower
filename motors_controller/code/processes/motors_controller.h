@@ -86,20 +86,29 @@ private:
 
     void loadPidSettings()
     {
-        eeprom_busy_wait();
-        Mediator::pid[LEFT].p_gain_x100 = eeprom_read_word(&ee_l_p_gain_x100_);
-        eeprom_busy_wait();
-        Mediator::pid[LEFT].i_gain_x100 = eeprom_read_word(&ee_l_i_gain_x100_);
-        eeprom_busy_wait();
-        Mediator::pid[LEFT].d_gain_x100 = eeprom_read_word(&ee_l_d_gain_x100_);
-        eeprom_busy_wait();
+        // eeprom_busy_wait();
+        // Mediator::pid[LEFT].p_gain_x100 = eeprom_read_word(&ee_l_p_gain_x100_);
+        // eeprom_busy_wait();
+        // Mediator::pid[LEFT].i_gain_x100 = eeprom_read_word(&ee_l_i_gain_x100_);
+        // eeprom_busy_wait();
+        // Mediator::pid[LEFT].d_gain_x100 = eeprom_read_word(&ee_l_d_gain_x100_);
+        // eeprom_busy_wait();
+        //
+        // Mediator::pid[RIGHT].p_gain_x100 = eeprom_read_word(&ee_r_p_gain_x100_);
+        // eeprom_busy_wait();
+        // Mediator::pid[RIGHT].i_gain_x100 = eeprom_read_word(&ee_r_i_gain_x100_);
+        // eeprom_busy_wait();
+        // Mediator::pid[RIGHT].d_gain_x100 = eeprom_read_word(&ee_r_d_gain_x100_);
+        // eeprom_busy_wait();
 
-        Mediator::pid[RIGHT].p_gain_x100 = eeprom_read_word(&ee_r_p_gain_x100_);
-        eeprom_busy_wait();
-        Mediator::pid[RIGHT].i_gain_x100 = eeprom_read_word(&ee_r_i_gain_x100_);
-        eeprom_busy_wait();
-        Mediator::pid[RIGHT].d_gain_x100 = eeprom_read_word(&ee_r_d_gain_x100_);
-        eeprom_busy_wait();
+        Mediator::pid[LEFT].p_gain_x100 = 200;
+        Mediator::pid[LEFT].i_gain_x100 = 100;
+        Mediator::pid[LEFT].d_gain_x100 = 0;
+
+        Mediator::pid[RIGHT].p_gain_x100 = 200;
+        Mediator::pid[RIGHT].i_gain_x100 = 100;
+        Mediator::pid[RIGHT].d_gain_x100 = 0;
+
     }
 
 private:
