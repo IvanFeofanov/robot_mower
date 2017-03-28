@@ -84,22 +84,22 @@ public:
             switch(parameter_)
             {
             case param_i_max:
-                Mediator::pid[side_].i_max = data_;
+                // Mediator::pid[side_].i_max = data_;
                 break;
             case param_i_min:
-                Mediator::pid[side_].i_min = data_;
+                // Mediator::pid[side_].i_min = data_;
                 break;
             case param_p_gain:
-                Mediator::pid[side_].p_gain_x100 = data_;
+                // Mediator::pid[side_].p_gain_x100 = data_;
                 break;
             case param_i_gain:
-                Mediator::pid[side_].i_gain_x100 = data_;
+                // Mediator::pid[side_].i_gain_x100 = data_;
                 break;
             case param_d_gain:
-                Mediator::pid[side_].d_gain_x100 = data_;
+                // Mediator::pid[side_].d_gain_x100 = data_;
                 break;
             case param_rps:
-                Mediator::set_rps[side_] = data_;
+                // Mediator::set_rps[side_] = data_;
                 break;
             }
             state_ = state_wait_begin_symbol;

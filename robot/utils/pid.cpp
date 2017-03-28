@@ -1,14 +1,17 @@
 #include "pid.h"
 
+
 Pid::Pid()
 {
-    i_max       = 7000.0;
-    i_min       = -7000.0;
-    i_gain      = 0.008;
+    p_gain      = 0.0;
+    d_gain      = 0.0;
+
+    i_gain      = 0.0;
+    i_max       = 0.0;
+    i_min       = -i_max;
+
     i_state_    = 0.0;
 
-    p_gain      = 1.0;
-    d_gain      = 0.0;
 }
 
 Pid::Pid(float i_max, float i_min, float p, float i, float d)
@@ -26,7 +29,6 @@ Pid::Pid(float i_max, float i_min, float p, float i, float d)
 float Pid::update(float x, float y)
 {
     float error = x - y;
-    error *= 70;
 
     float p_value = p_gain * error;
 

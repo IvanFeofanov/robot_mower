@@ -60,7 +60,7 @@ public:
 
         //save pid settings
         if(Mediator::save_pid_settings_flag){
-            savePidSettings();
+            // savePidSettings();
             Mediator::save_pid_settings_flag = false;
         }
     }
