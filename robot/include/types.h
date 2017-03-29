@@ -42,20 +42,4 @@ typedef struct BumperMsg
     bool is_save;
 }BumperMsg;
 
-typedef struct PerimeterSensorMsg
-{
-    int16_t signal_offset;
-
-    uint16_t lps;
-
-    int16_t magnitude;
-    int16_t smooth_magnitude;
-    bool is_inside;
-    bool is_new_data;
-
-    bool is_invert_sigcode;
-    bool is_offset_calibration_mode;
-
-}PerimeterSensorMsg;
-
 #endif

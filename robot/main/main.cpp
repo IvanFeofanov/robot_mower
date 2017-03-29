@@ -3,26 +3,62 @@ extern "C"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include <stdio.h>
-#include <string.h>
+// #include <stdio.h>
+// #include <string.h>
 }
 
+//portable
+#include "portable/atmega328/uart.h"
+#include "portable/atmega328/time.h"
+#include "portable/atmega328/twi_master.h"
+#include "portable/atmega328/pio.h"
+#include "portable/atmega328/mower_motor.h"
+#include "portable/atmega328/adc_man.h"
+
+//automats
+// #include "processes/terminal.h"
+#include "processes/button.h"
+#include "processes/bumper.h"
+#include "processes/perimeter_sensor.h"
+#include "processes/one_led.h"
+#include "processes/mower.h"
+#include "processes/drive_motors.h"
 #include "robot.h"
 
-// Needed for AVR to use virtual functions
-extern "C" void __cxa_pure_virtual(void);
-void __cxa_pure_virtual(void) {}
+//hardware
+enum {  MOTOR_CONTROLLER_TWI_ADDRESS = 2 };
+typedef PioB5 LedPin;
+typedef PioD6 ButtonPin;
+typedef Adc0 AdcLeftPot;
+typedef Adc1 AdcRightPot;
+typedef Adc2 AdcPerimeterSensor;
 
-Robot robot;
+// sub automat
+// Terminal<Serial, Time> terminal_;
+// Button<ButtonPin, Time> button_;
+typedef Bumper<AdcLeftPot, AdcRightPot> Bumper_;
+typedef PerimeterSensor<AdcPerimeterSensor> Perimeter;
+typedef OneLed<LedPin> LedIndicator;
+// Mower<MowerMotor, Time> mower_;
+// DriveMotors<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> drive_motors_;
 
 static inline void init()
 {
-    robot.init();
+    // hardware
+    Time::init();
+    sei();
+
+    Bumper_::init();
+    Perimeter::init();
+    LedIndicator::init();
+    LedIndicator::blink();
 }
 
 static inline void loop()
 {
-    robot.loop();
+    Bumper_::update();
+    Perimeter::update();
+    LedIndicator::update();
 }
 
 int main()

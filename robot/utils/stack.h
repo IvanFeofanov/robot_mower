@@ -1,6 +1,8 @@
 #ifndef STACK_H
 #define STACK_H
 
+#include <stdio.h>
+
 template <
     typename T,
     size_t MAX_SIZE
