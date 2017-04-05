@@ -39,19 +39,25 @@ typedef Adc2 AdcPerimeterSensor;
 typedef Bumper<AdcLeftPot, AdcRightPot> Bumper_;
 typedef PerimeterSensor<AdcPerimeterSensor> Perimeter;
 typedef OneLed<LedPin> LedIndicator;
+typedef Mower<MowerMotor> Mower_;
 // Mower<MowerMotor, Time> mower_;
 // DriveMotors<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> drive_motors_;
 
 static inline void init()
 {
     // hardware
+    Adc::init();
     Time::init();
+    MowerMotor::init();
     sei();
 
     Bumper_::init();
     Perimeter::init();
     LedIndicator::init();
-    LedIndicator::blink();
+    // LedIndicator::blink();
+    Mower_::init();
+    // Mower_::setEnable(true);
+    // Mower_::setSpeed(50);
 }
 
 static inline void loop()
@@ -59,6 +65,7 @@ static inline void loop()
     Bumper_::update();
     Perimeter::update();
     LedIndicator::update();
+    Mower_::update();
 }
 
 int main()

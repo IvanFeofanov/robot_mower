@@ -28,18 +28,4 @@ public:
     uint32_t right_counter;
 }DriveMotorsMsg;
 
-typedef struct BumperMsg
-{
-    uint8_t left;
-    uint16_t left_min;
-    uint16_t left_max;
-
-    uint8_t right;
-    uint16_t right_min;
-    uint16_t right_max;
-
-    bool is_calibration;
-    bool is_save;
-}BumperMsg;
-
 #endif

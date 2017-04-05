@@ -32,6 +32,12 @@ public:
 
     static inline void setPwm(uint8_t value)
     {
+        if(value > MIN_PWM){
+            DDRB |= (1<<3);
+        }else{
+            DDRB &= ~(1<<3);
+        }
+
         OCR2A = value;
     }
 

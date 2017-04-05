@@ -3,59 +3,88 @@
 
 #include "map.h"
 
-#include "types.h"
-
 template<
-    typename Motor,
-    typename Time
+    typename Motor
     >
 class Mower
 {
+private:
+    // must be >= 255
+    enum { SETTLING_TIME = 1000 }; //ms
+    //time betwen set
+    enum { TBS = SETTLING_TIME / 255 };
+
 public:
-    enum {
-        MIN_SPEED = 0,
-        MAX_SPEED = 255
-    };
-
-    enum {
-        TIME_STEP = 10, //ms
-        SPEED_STEP = 1
-    };
-
-    void init()
+    static void init()
     {
-        //drive motor
+        is_enable_ = false;
+        pwm_ = Motor::MIN_PWM;
+        current_pwm_ = Motor::MIN_PWM;
+        last_time_ = 0;
+
         Motor::setPwm(Motor::MIN_PWM);
     }
 
-    void run(MowerMsg* mower_msg)
+    static void update()
     {
-        static uint32_t last_time = 0;
-        static uint8_t current_speed = MIN_SPEED;
-
-        if(mower_msg->speed == MIN_SPEED || !mower_msg->is_enable){ //stop
+        if(pwm_ == Motor::MIN_PWM || !is_enable_){ //stop
             Motor::setPwm(Motor::MIN_PWM);
-            current_speed = MIN_SPEED;
+            current_pwm_ = Motor::MIN_PWM;
             return;
         }
 
-        if(Time::now() - last_time > TIME_STEP){
-            uint8_t pwm = map(current_speed, MIN_SPEED, MAX_SPEED,
-                    Motor::MIN_PWM, Motor::MAX_PWM);
+        if(Time::now() - last_time_ >= TBS){
+            Motor::setPwm(current_pwm_);
 
-            Motor::setPwm(pwm);
-
-            if(current_speed < mower_msg->speed){
-                current_speed += SPEED_STEP;
+            if(current_pwm_ < pwm_){
+                current_pwm_ += 1;
             }
 
-            if(current_speed > mower_msg->speed){
-                current_speed -= SPEED_STEP;
+            if(current_pwm_ > pwm_){
+                current_pwm_ -= 1;
             }
 
-            last_time = Time::now();
+            last_time_ = Time::now();
         }
     }
+
+    static void setSpeed(uint8_t speed)
+    {
+        pwm_ = speed;
+    }
+
+    static inline uint8_t speed()
+    {
+        return pwm_;
+    }
+
+    static void setEnable(bool is_enable)
+    {
+        is_enable_ = is_enable;
+    }
+
+    static inline bool isEnable()
+    {
+        return is_enable_;
+    }
+
+private:
+    static bool is_enable_;
+    static uint8_t pwm_;
+    static uint8_t current_pwm_;
+    static uint32_t last_time_;
 };
+
+template<typename Motor>
+bool Mower<Motor>::is_enable_;
+
+template<typename Motor>
+uint8_t Mower<Motor>::pwm_;
+
+template<typename Motor>
+uint8_t Mower<Motor>::current_pwm_;
+
+template<typename Motor>
+uint32_t Mower<Motor>::last_time_;
 
 #endif
