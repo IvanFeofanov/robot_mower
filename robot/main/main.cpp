@@ -17,7 +17,7 @@ extern "C"
 
 //automats
 // #include "processes/terminal.h"
-#include "processes/button.h"
+#include "processes/one_button.h"
 #include "processes/bumper.h"
 #include "processes/perimeter_sensor.h"
 #include "processes/one_led.h"
@@ -35,13 +35,27 @@ typedef Adc2 AdcPerimeterSensor;
 
 // sub automat
 // Terminal<Serial, Time> terminal_;
-// Button<ButtonPin, Time> button_;
+typedef OneButton<ButtonPin, true> Button;
 typedef Bumper<AdcLeftPot, AdcRightPot> Bumper_;
 typedef PerimeterSensor<AdcPerimeterSensor> Perimeter;
 typedef OneLed<LedPin> LedIndicator;
 typedef Mower<MowerMotor> Mower_;
-// Mower<MowerMotor, Time> mower_;
 // DriveMotors<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> drive_motors_;
+
+
+// void function()
+// {
+//     LedPin::setHigh();
+//     static bool flag_ = false;
+//     if(!flag_){
+//         LedIndicator::blink();
+//         flag_ = true;
+//     }else{
+//         LedIndicator::setLow();
+//         flag_ = false;
+//     }
+// }
+//
 
 static inline void init()
 {
@@ -51,10 +65,14 @@ static inline void init()
     MowerMotor::init();
     sei();
 
+    Button::init();
+    // Button::attachClick(&function);
+
     Bumper_::init();
     Perimeter::init();
     LedIndicator::init();
     // LedIndicator::blink();
+
     Mower_::init();
     // Mower_::setEnable(true);
     // Mower_::setSpeed(50);
@@ -62,6 +80,7 @@ static inline void init()
 
 static inline void loop()
 {
+    Button::update();
     Bumper_::update();
     Perimeter::update();
     LedIndicator::update();

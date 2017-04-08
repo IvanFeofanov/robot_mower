@@ -69,7 +69,7 @@ struct Pin
     {
         UNIT::dirToggle(1<<BIT);
     }
-    static inline uint8_t isHigh()
+    static inline bool isHigh()
     {
         return UNIT::pinRead() & (1<<BIT);
     }

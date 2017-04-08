@@ -50,7 +50,7 @@ void Robot::init()
     // bumper_msg_.is_save = false;
     //
     // //perimeter sensor
-    // perimeter_sensor_msg_.signal_offset = 512;
+    // perimeter_sensor_msg_.signal_offset = 512
     //
     // perimeter_sensor_msg_.lps = 0;
     //
