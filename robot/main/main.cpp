@@ -3,8 +3,8 @@ extern "C"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-// #include <stdio.h>
-// #include <string.h>
+#include <stdio.h>
+#include <string.h>
 }
 
 //portable
@@ -22,7 +22,7 @@ extern "C"
 #include "processes/perimeter_sensor.h"
 #include "processes/one_led.h"
 #include "processes/mower.h"
-#include "processes/drive_motors.h"
+#include "processes/motors_controller_client.h"
 #include "robot.h"
 
 //hardware
@@ -40,8 +40,7 @@ typedef Bumper<AdcLeftPot, AdcRightPot> Bumper_;
 typedef PerimeterSensor<AdcPerimeterSensor> Perimeter;
 typedef OneLed<LedPin> LedIndicator;
 typedef Mower<MowerMotor> Mower_;
-// DriveMotors<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> drive_motors_;
-
+typedef MotorsControllerClient<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> DriveMotor;
 
 // void function()
 // {
@@ -57,12 +56,33 @@ typedef Mower<MowerMotor> Mower_;
 // }
 //
 
+char buffer[32];
+
+void rpsCallback(int16_t left, int16_t right)
+{
+    LedPin::toggle();
+    sprintf(buffer, "rps = left: %d right: %d    ", left, right);
+    Serial::write(buffer, strlen(buffer));
+    while(!Serial::isWriten());
+}
+
+void odometerCallback(uint32_t left, uint32_t right)
+{
+    sprintf(buffer, "counter = left: %d right: %d\n", left, right);
+    Serial::write(buffer, strlen(buffer));
+    while(!Serial::isWriten());
+
+}
+
+
 static inline void init()
 {
     // hardware
     Adc::init();
     Time::init();
     MowerMotor::init();
+    TwiMaster::init();
+    Serial::init();
     sei();
 
     Button::init();
@@ -76,6 +96,11 @@ static inline void init()
     Mower_::init();
     // Mower_::setEnable(true);
     // Mower_::setSpeed(50);
+
+    DriveMotor::init();
+    DriveMotor::attachSpeedDataChange(&rpsCallback);
+    DriveMotor::attachOdometerDataChange(&odometerCallback);
+    DriveMotor::setSpeed(90, 90);
 }
 
 static inline void loop()
@@ -85,6 +110,7 @@ static inline void loop()
     Perimeter::update();
     LedIndicator::update();
     Mower_::update();
+    DriveMotor::update();
 }
 
 int main()
