@@ -105,10 +105,10 @@ public:
             break;
 
         case state_counter_receive:
-            left_counter = (buffer_[0] << 24) | (buffer_[1] << 16)
-                          | (buffer_[2] << 8) | buffer_[3];
-            right_counter = (buffer_[4] << 24) | (buffer_[5] << 16)
-                          | (buffer_[6] << 8) | buffer_[7];
+            left_counter =  ((uint32_t)buffer_[0] << 24) | ((uint32_t)buffer_[1] << 16)
+                          | ((uint32_t)buffer_[2] << 8) | (uint32_t)buffer_[3];
+            right_counter = ((uint32_t)buffer_[4] << 24) | ((uint32_t)buffer_[5] << 16)
+                          | ((uint32_t)buffer_[6] << 8) | (uint32_t)buffer_[7];
 
             if(odometer_callback_.pntr != 0){
                 odometer_callback_.pntr(left_counter, right_counter);

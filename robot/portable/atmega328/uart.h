@@ -10,7 +10,6 @@ extern "C"
 
 #include "ring_buffer.h"
 
-
 enum UART_BAUND_RATE
 {
     UBR_2400 = 2400,
@@ -28,7 +27,8 @@ enum UART_SPEED_MODE
 template<
     UART_BAUND_RATE BAUND_RATE,
     UART_SPEED_MODE SPEED_MODE,
-    uint16_t        RECEIVE_BUFFER_SIZE
+    uint16_t        RECEIVE_BUFFER_SIZE,
+    uint16_t        TRANSFER_BUFFER_SIZE
     >
 class Uart
 {
@@ -56,43 +56,65 @@ public:
         //8 - bit character Size
         UCSR0C |= (1<<UCSZ01) | (1<<UCSZ00);
 
-        transfer_buffer_ptr_    = 0;
-        transfer_buffer_index_  = 0;
-        transfer_buffer_length_  = 0;
     }
 
-    static bool write(const void* buffer, uint16_t length)
+    static uint16_t write(const void* buffer, uint16_t length)
     {
-        if(length == 0 || !isWriten())
-            return false;
+        uint16_t empty_space = txAvailable();
+        uint16_t len = length < empty_space ? length : empty_space;
+        bool is_writen = transfer_buffer_.isEmpty();
 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
-            transfer_buffer_ptr_     = (char*)buffer;
-            transfer_buffer_length_  = length;
+            for(uint16_t i = 0; i < len; i++){
+                transfer_buffer_.put(((uint8_t*)buffer)[i]);
+            }
 
-            UDR0 = transfer_buffer_ptr_[transfer_buffer_index_];
-
-            UCSR0B |= (1<<UDRIE0); //UDR empty interrupt enable
-
+            if(is_writen){
+                uint8_t b;
+                transfer_buffer_.take(&b);
+                UDR0 = b;
+                UCSR0B |= (1<<UDRIE0); //UDR empty interrupt enable
+            }
         }
 
-        return true;
+        return len;
     }
 
-    static bool isWriten()
+    static int16_t write(uint8_t byte)
     {
-        bool is_writen = false;
+        if(txAvailable() == 0){
+            return -1;
+        }
+
+        bool is_writen = transfer_buffer_.isEmpty();
 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
-            is_writen = transfer_buffer_length_ == 0;
+            if(is_writen){
+                UDR0 = byte;
+                UCSR0B |= (1<<UDRIE0); //UDR empty interrupt enable
+            }else{
+                transfer_buffer_.put(byte);
+            }
         }
 
-        return is_writen;
+        return byte;
     }
 
-    static uint16_t available()
+    static uint16_t txAvailable()
+    {
+        uint16_t empty_space = 0;
+
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            empty_space = TRANSFER_BUFFER_SIZE - transfer_buffer_.count();
+        }
+
+        return empty_space;
+    }
+
+    static uint16_t rxAvailable()
     {
         uint16_t count = 0;
 
@@ -104,9 +126,9 @@ public:
         return count;
     }
 
-    static char read()
+    static int16_t read()
     {
-        char value = 0;
+        uint8_t value = 0;
         bool is_ok = false;
 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
@@ -128,7 +150,7 @@ public:
             char value;
             for(len = 0; len < length; len++){
                 if(receive_buffer_.take(&value)){
-                    ((char*)buffer)[len] = value;
+                    ((uint8_t*)buffer)[len] = value;
                 }else{
                     break;
                 }
@@ -138,11 +160,19 @@ public:
         return len;
     }
 
-    static void flush()
+    static void rxFlush()
     {
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             receive_buffer_.flush();
+        }
+    }
+
+    static void txFlush()
+    {
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+        {
+            transfer_buffer_.flush();
         }
     }
 
@@ -154,60 +184,49 @@ public:
 
     static void dataRegisterEmpty()
     {
-        transfer_buffer_index_++;
-
-        if(transfer_buffer_index_ == transfer_buffer_length_){
+        if(transfer_buffer_.isEmpty()){
             UCSR0B &= ~(1<<UDRIE0); //UDR empty interrupt disable
         }else{
-            UDR0 = transfer_buffer_ptr_[transfer_buffer_index_];
+            uint8_t byte;
+            transfer_buffer_.take(&byte);
+            UDR0 = byte;
         }
     }
 
     static void transferComplate()
     {
-        transfer_buffer_ptr_    = 0;
-        transfer_buffer_index_  = 0;
-        transfer_buffer_length_ = 0;
     }
 
 private:
-    static RingBuffer<RECEIVE_BUFFER_SIZE, char> receive_buffer_;
-    static char*    transfer_buffer_ptr_;
-    static uint16_t transfer_buffer_index_;
-    static uint16_t transfer_buffer_length_;
-
+    static RingBuffer<RECEIVE_BUFFER_SIZE, uint8_t> receive_buffer_;
+    static RingBuffer<TRANSFER_BUFFER_SIZE, uint8_t> transfer_buffer_;
+    static bool is_writen_;
 };
 
 template<
     UART_BAUND_RATE BAUND_RATE,
     UART_SPEED_MODE SPEED_MODE,
-    uint16_t        RECEIVE_BUFFER_SIZE
+    uint16_t        RECEIVE_BUFFER_SIZE,
+    uint16_t        TRANSFER_BUFFER_SIZE
     >
-RingBuffer<RECEIVE_BUFFER_SIZE, char> Uart<BAUND_RATE, SPEED_MODE, RECEIVE_BUFFER_SIZE>::receive_buffer_;
+RingBuffer<RECEIVE_BUFFER_SIZE, uint8_t>
+Uart<BAUND_RATE,
+    SPEED_MODE,
+    RECEIVE_BUFFER_SIZE,
+    TRANSFER_BUFFER_SIZE>::receive_buffer_;
 
 template<
     UART_BAUND_RATE BAUND_RATE,
     UART_SPEED_MODE SPEED_MODE,
-    uint16_t        RECEIVE_BUFFER_SIZE
+    uint16_t        RECEIVE_BUFFER_SIZE,
+    uint16_t        TRANSFER_BUFFER_SIZE
     >
-char* Uart<BAUND_RATE, SPEED_MODE, RECEIVE_BUFFER_SIZE>::transfer_buffer_ptr_;
+RingBuffer<TRANSFER_BUFFER_SIZE, uint8_t>
+Uart<BAUND_RATE,
+    SPEED_MODE,
+    RECEIVE_BUFFER_SIZE,
+    TRANSFER_BUFFER_SIZE>::transfer_buffer_;
 
-template<
-    UART_BAUND_RATE BAUND_RATE,
-    UART_SPEED_MODE SPEED_MODE,
-    uint16_t        RECEIVE_BUFFER_SIZE
-    >
-uint16_t Uart<BAUND_RATE, SPEED_MODE, RECEIVE_BUFFER_SIZE>::transfer_buffer_index_;
-
-template<
-    UART_BAUND_RATE BAUND_RATE,
-    UART_SPEED_MODE SPEED_MODE,
-    uint16_t        RECEIVE_BUFFER_SIZE
-    >
-uint16_t Uart<BAUND_RATE, SPEED_MODE, RECEIVE_BUFFER_SIZE>::transfer_buffer_length_;
-
-
-typedef Uart<UBR_9600, UART_NORMAL_SPEED_MODE, 128> Serial;
-
+typedef Uart<UBR_9600, UART_NORMAL_SPEED_MODE, 128, 128> Serial;
 
 #endif

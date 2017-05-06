@@ -91,9 +91,7 @@ CPPSRC = ./main/$(TARGET).cpp \
 		 ./portable/atmega328/adc_man.cpp \
 		 ./utils/pid.cpp \
 		 ./utils/map.cpp \
-		 ./utils/correlation_filter.cpp \
-		 ./utils/tree_menu/menu_item.cpp \
-		 ./utils/tree_menu/tree_menu.cpp
+		 ./utils/correlation_filter.cpp
 
 
 # List Assembler source files here.

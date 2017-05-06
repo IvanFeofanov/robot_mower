@@ -1,5 +1,5 @@
-#ifndef BUMPER_H
-#define BUMPER_H
+#ifndef BUMPER_SENSOR_H
+#define BUMPER_SENSOR_H
 
 #include "map.h"
 
@@ -7,7 +7,7 @@ template<
     typename AdcLeftPot,
     typename AdcRightPot
     >
-class Bumper
+class BumperSensor
 {
 public:
     static void init()
@@ -121,34 +121,34 @@ private:
 };
 
 template<typename AdcLeftPot, typename AdcRightPot>
-uint16_t Bumper<AdcLeftPot, AdcRightPot>::left_adc_value_;
+uint16_t BumperSensor<AdcLeftPot, AdcRightPot>::left_adc_value_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-uint16_t Bumper<AdcLeftPot, AdcRightPot>::left_min_adc_value_;
+uint16_t BumperSensor<AdcLeftPot, AdcRightPot>::left_min_adc_value_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-uint16_t Bumper<AdcLeftPot, AdcRightPot>::left_max_adc_value_;
+uint16_t BumperSensor<AdcLeftPot, AdcRightPot>::left_max_adc_value_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-uint16_t Bumper<AdcLeftPot, AdcRightPot>::right_adc_value_;
+uint16_t BumperSensor<AdcLeftPot, AdcRightPot>::right_adc_value_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-uint16_t Bumper<AdcLeftPot, AdcRightPot>::right_min_adc_value_;
+uint16_t BumperSensor<AdcLeftPot, AdcRightPot>::right_min_adc_value_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-uint16_t Bumper<AdcLeftPot, AdcRightPot>::right_max_adc_value_;
+uint16_t BumperSensor<AdcLeftPot, AdcRightPot>::right_max_adc_value_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-bool Bumper<AdcLeftPot, AdcRightPot>::is_calibration_mode_;
+bool BumperSensor<AdcLeftPot, AdcRightPot>::is_calibration_mode_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-bool Bumper<AdcLeftPot, AdcRightPot>::last_is_calibration_mode_;
+bool BumperSensor<AdcLeftPot, AdcRightPot>::last_is_calibration_mode_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-uint8_t Bumper<AdcLeftPot, AdcRightPot>::left_;
+uint8_t BumperSensor<AdcLeftPot, AdcRightPot>::left_;
 
 template<typename AdcLeftPot, typename AdcRightPot>
-uint8_t Bumper<AdcLeftPot, AdcRightPot>::right_;
+uint8_t BumperSensor<AdcLeftPot, AdcRightPot>::right_;
 
 
 #endif

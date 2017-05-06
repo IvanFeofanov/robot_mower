@@ -59,7 +59,7 @@ public:
         if(head_ >= tail_)
             return head_ - tail_;
         else
-            return SIZE - tail_ + head_;
+            return SIZE - tail_ + head_ + 1;
     }
 
     void flush()
