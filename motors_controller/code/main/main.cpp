@@ -1,82 +1,55 @@
 extern "C"
 {
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
-#include <stdio.h>
-#include <string.h>
+#   include <avr/io.h>
+#   include <avr/interrupt.h>
+#   include <avr/wdt.h>
+#   include <avr/eeprom.h>
+#   include <util/delay.h>
+#   include <stdio.h>
+#   include <string.h>
 }
 
-#ifdef __AVR_ATmega328P__
-#   include "portable/atmega328/uart.h"
-#   include "portable/atmega328/motors.h"
-#   include "portable/atmega328/odometers.h"
-#   include "portable/atmega328/twi_slave.h"
-#endif
-
+// portable
 #ifdef __AVR_ATmega88P__
-#   include "portable/atmega88pa/uart.h"
 #   include "portable/atmega88pa/motors.h"
 #   include "portable/atmega88pa/odometers.h"
-#   include "portable/atmega88pa/twi_slave.h"
+#   include "portable/atmega88pa/pio.h"
 #endif
 
-#include "../config.h"
-
-#include "processes/terminal.h"
+// automats
 #include "processes/motors_controller.h"
-#include "processes/twi_interface.h"
-#include "processes/mediator.h"
 
+// debug
 
-//process
-Terminal<Serial> terminal;
+// hardware
+typedef PioC2 Led1;
+typedef PioC3 Led2;
+
+// automats
 MotorsController<Motors, Odometers> motors_controller;
 
-static inline void hardwareInit()
+static inline void init()
 {
-    Serial::init();
     Motors::init();
     Odometers::init();
-    Twi::init(TWI_DEVICE_ADDRESS);
 
-    // DDRB |= (1<<5); //led
-    DDRC |= (1<<2) | (1<<3);
+    Led1::setOutput();
+    Led2::setOutput();
 
     sei();
-}
 
-static inline void processesInit()
-{
-    terminal.init();
     motors_controller.init();
-    TwiInterface<Twi>::init();
-    Mediator::init();
+    // TwiInterface<Twi>::init();
 }
 
 static inline void loop()
 {
-    terminal.run();
-    motors_controller.run();
+    motors_controller.update();
 }
 
-// uint8_t get_buffer[32];
 int main()
 {
-    hardwareInit();
-    processesInit();
-
-    // _delay_ms(1000);
-
-    // PORTB |= (1<<5);
-    // char debug[32];
-    // for(int i = 0; i < Twi::work_log_index_; i++){
-    //     sprintf(debug, "%x ", Twi::work_log_[i]);
-    //     Serial::write(debug, strlen(debug));
-    //     while(!Serial::isWriten());
-    // }
-    // Twi::work_log_index_ = 0;
-    //
+    init();
 
     while(true){
         loop();

@@ -11,15 +11,15 @@ extern volatile uint16_t Odometers::right_time_;
 
 ISR(INT0_vect)
 {
-    Odometers::leftOdometerInterrupt();
+    Odometers::left_odometer_interrupt();
 }
 
 ISR(INT1_vect)
 {
-    Odometers::rightOdometerInterrupt();
+    Odometers::right_odometer_interrupt();
 }
 
 ISR(TIMER1_COMPA_vect)
 {
-    Odometers::timerInterrupt();
+    Odometers::timer_interrupt();
 }

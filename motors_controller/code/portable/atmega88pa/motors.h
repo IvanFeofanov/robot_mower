@@ -40,16 +40,16 @@ public:
         LEFT_PWM = 0;
         RIGHT_PWM = 0;
 
-        setDirection(STOP, STOP);
+        set_dir(STOP, STOP);
     }
 
-    static inline void setPwm(uint8_t left, uint8_t right)
+    static inline void set_pwm(uint8_t left, uint8_t right)
     {
         LEFT_PWM = left;
         RIGHT_PWM = right;
     }
 
-    static void setDirection(int8_t left, int8_t right)
+    static void set_dir(int8_t left, int8_t right)
     {
         //left
         M_L_1_LOW;
@@ -72,8 +72,8 @@ public:
 public:
     enum {
         RIGHT = -1,
-        STOP,
-        LEFT
+        STOP  = 0,
+        LEFT  = 1
     };
 
     enum { MAX_PWM = 0xff };

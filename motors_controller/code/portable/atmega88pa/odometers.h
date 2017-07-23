@@ -39,7 +39,7 @@ public:
         TIMSK1 = (1<<OCIE1A); // Output compare A match interrupt Enable
     }
 
-    static CounterType getLeftCounter()
+    static CounterType left_counter()
     {
         CounterType tmp = 0;
         ATOMIC_BLOCK(ATOMIC_FORCEON)
@@ -49,7 +49,7 @@ public:
         return tmp;
     }
 
-    static CounterType getRightCounter()
+    static CounterType right_counter()
     {
         CounterType tmp = 0;
         ATOMIC_BLOCK(ATOMIC_FORCEON)
@@ -59,7 +59,7 @@ public:
         return tmp;
     }
 
-    static void resetLeftCounter()
+    static void reset_right_counter()
     {
         ATOMIC_BLOCK(ATOMIC_FORCEON)
         {
@@ -67,7 +67,7 @@ public:
         }
     }
 
-    static void resetRightCounter()
+    static void reset_left_counter()
     {
         ATOMIC_BLOCK(ATOMIC_FORCEON)
         {
@@ -75,7 +75,7 @@ public:
         }
     }
 
-    static bool leftRps(uint16_t* rps)
+    static bool left_rps(uint16_t* rps)
     {
         uint32_t time;
 
@@ -95,7 +95,7 @@ public:
         return true;
     }
 
-    static bool rightRps(uint16_t* rps)
+    static bool right_rps(uint16_t* rps)
     {
         uint32_t time;
 
@@ -116,7 +116,7 @@ public:
     }
 
 public:
-    static void leftOdometerInterrupt()
+    static void left_odometer_interrupt()
     {
         static uint8_t n = 0;
 
@@ -140,7 +140,7 @@ public:
 
     }
 
-    static void rightOdometerInterrupt()
+    static void right_odometer_interrupt()
     {
         static uint8_t n = 0;
 
@@ -164,7 +164,7 @@ public:
 
     }
 
-    static void timerInterrupt()
+    static void timer_interrupt()
     {
         left_tc_++;
         if(left_tc_ >= MAX_TIME){

@@ -87,13 +87,6 @@ SRC =
 CPPSRC = ./main/$(TARGET).cpp \
 		 ./utils/pid.cpp
 
-ifeq ($(MCU), atmega328p)
-CPPSRC += ./portable/atmega328/uart.cpp \
-		 ./portable/atmega328/motors.cpp \
-		 ./portable/atmega328/odometers.cpp \
-		 ./portable/atmega328/twi_slave.cpp
-endif
-
 ifeq ($(MCU), atmega88p)
 CPPSRC += ./portable/atmega88pa/uart.cpp \
 		 ./portable/atmega88pa/motors.cpp \
