@@ -41,8 +41,8 @@
 
 
 # MCU name
-# MCU = atmega328p
-MCU = atmega88p
+MCU = atmega328p
+# MCU = atmega88p
 
 # Processor frequency.
 #     This will define a symbol, F_CPU, in all source code files equal to the
@@ -87,12 +87,14 @@ SRC =
 CPPSRC = ./main/$(TARGET).cpp \
 		 ./utils/pid.cpp
 
-ifeq ($(MCU), atmega88p)
+# ifeq ($(MCU), atmega88p)
 CPPSRC += ./portable/atmega88pa/uart.cpp \
 		 ./portable/atmega88pa/motors.cpp \
 		 ./portable/atmega88pa/odometers.cpp \
-		 ./portable/atmega88pa/twi_slave.cpp
-endif
+		 ./portable/atmega88pa/twi_slave.cpp \
+		 ./portable/atmega88pa/spi.cpp
+
+# endif
 
 
 # List Assembler source files here.
@@ -281,14 +283,14 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Type: avrdude -c ?
 # to get a full listing.
 
-# AVRDUDE_PROGRAMMER = arduino
-AVRDUDE_PROGRAMMER = usbasp
+AVRDUDE_PROGRAMMER = arduino
+# AVRDUDE_PROGRAMMER = usbasp
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
-# AVRDUDE_PORT = /dev/ttyUSB0    # programmer connected to serial device
+AVRDUDE_PORT = /dev/ttyUSB0    # programmer connected to serial device
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
+# AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
 
 
 # Uncomment the following if you want avrdude's erase cycle counter.
@@ -606,6 +608,9 @@ clean_list :
 	$(REMOVE) $(TARGET).map
 	$(REMOVE) $(TARGET).sym
 	$(REMOVE) $(TARGET).lss
+	$(REMOVE) portable/atmega88pa/*.o
+	$(REMOVE) main/*.o
+	$(REMOVE) utils/*.o
 	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.o)
 	$(REMOVE) $(SRC:%.c=$(OBJDIR)/%.lst)
 	$(REMOVE) $(SRC:.c=.s)

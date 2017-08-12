@@ -3,6 +3,10 @@
 
 #include <avr/eeprom.h>
 
+#include "utils/pid.h"
+
+#define ABS(val) (val < 0 ? -val : val)
+
 template<
     typename Motors,
     typename Odometers
@@ -10,88 +14,107 @@ template<
 class MotorsController
 {
 public:
-
-    void init()
+    static void init()
     {
-        last_time_ = 0;
         load_config();
     }
 
-    void update()
+    static void update()
     {
-        uint16_t rps;
-        static uint8_t left_pwm = 0;
-        static uint8_t right_pwm = 0;
+        // static uint8_t left = 0;
+        // static uint8_t right = 0;
 
-        //left
-        // if(Odometers::leftRps(&rps)){
-        //     Mediator::real_rps[LEFT] = rps;
-        //     Mediator::counter[LEFT] = Odometers::getLeftCounter();
+        // //left
+        // if(Odometers::left_rps((uint16_t*)(&left_real_rps_)){
         //     left_pwm = Mediator::pid[LEFT].update(
-        //             Mediator::set_rps[LEFT] < 0 ?
-        //             -Mediator::set_rps[LEFT] : Mediator::set_rps[LEFT],
-        //             Mediator::real_rps[LEFT]);
+        //             ABS(left_set_rps), left_real_rps_);
         // }
         //
         // //right
-        // if(Odometers::rightRps(&rps)){
-        //     Mediator::real_rps[RIGHT] = rps;
-        //     Mediator::counter[RIGHT] = Odometers::getRightCounter();
+        // if(Odometers::right_rps((uint16_t*)(&left_real_rps_)){
         //     right_pwm = Mediator::pid[RIGHT].update(
         //             Mediator::set_rps[RIGHT] < 0 ?
         //             -Mediator::set_rps[RIGHT] : Mediator::set_rps[RIGHT],
         //             Mediator::real_rps[RIGHT]);
         // }
         //
-        // Motors::set_pwm(left_pwm, right_pwm);
-        // Motors::set_dir(Mediator::set_rps[LEFT],
-        //                 Mediator::set_rps[RIGHT]);
+        // Motors::set_duty(left, right);
+        // Motors::set_dir(left_set_rps_, right_set_rps_);
 
     }
 
+    static void set_input_rps(int16_t left, int16_t right)
+    {
+        left_set_rps_ = left;
+        right_set_rps_ = right;
+    }
+
+    static void input_rps(int16_t* left, int16_t* right)
+    {
+        *left = left_set_rps_;
+        *right = right_set_rps_;
+    }
+
+    static void real_rps(int16_t* left, int16_t* right)
+    {
+        *left = left_real_rps_;
+        *right = right_real_rps_;
+    }
+
+    static void set_pid(Pid left, Pid right)
+    {
+        left_pid_ = left;
+        right_pid_ = right;
+    }
+
+    static void pid(Pid* left, Pid* right)
+    {
+        *left = left_pid_;
+        *right = right_pid_;
+    }
+
 private:
-    void save_config()
+    static void save_config()
     {
         // eeprom_update_word(&ee_r_d_gain_x100_, Mediator::pid[RIGHT].d_gain_x100);
         // eeprom_busy_wait();
     }
 
-    void load_config()
+    static void load_config()
     {
         // Mediator::pid[RIGHT].d_gain_x100 = eeprom_read_word(&ee_r_d_gain_x100_);
         // eeprom_busy_wait();
     }
 
 private:
-    uint32_t last_time_;
+    static int16_t left_set_rps_;
+    static int16_t right_set_rps_;
+    static int16_t left_real_rps_;
+    static int16_t right_real_rps_;
 
-    static uint16_t EEMEM ee_l_p_gain_x100_;
-    static uint16_t EEMEM ee_l_i_gain_x100_;
-    static uint16_t EEMEM ee_l_d_gain_x100_;
+    static Pid left_pid_;
+    static Pid right_pid_;
 
-    static uint16_t EEMEM ee_r_p_gain_x100_;
-    static uint16_t EEMEM ee_r_i_gain_x100_;
     static uint16_t EEMEM ee_r_d_gain_x100_;
 
 };
 
 template<typename Motors, typename Odometers>
-uint16_t EEMEM MotorsController<Motors, Odometers>::ee_l_p_gain_x100_ = 200;
+int16_t MotorsController<Motors, Odometers>::left_set_rps_;
 
 template<typename Motors, typename Odometers>
-uint16_t EEMEM MotorsController<Motors, Odometers>::ee_l_i_gain_x100_ = 100;
+int16_t MotorsController<Motors, Odometers>::right_set_rps_;
 
 template<typename Motors, typename Odometers>
-uint16_t EEMEM MotorsController<Motors, Odometers>::ee_l_d_gain_x100_ = 0;
+int16_t MotorsController<Motors, Odometers>::left_real_rps_;
 
 template<typename Motors, typename Odometers>
-uint16_t EEMEM MotorsController<Motors, Odometers>::ee_r_p_gain_x100_ = 200;
+int16_t MotorsController<Motors, Odometers>::right_real_rps_;
 
 template<typename Motors, typename Odometers>
-uint16_t EEMEM MotorsController<Motors, Odometers>::ee_r_i_gain_x100_ = 100;
+Pid MotorsController<Motors, Odometers>::left_pid_;
 
 template<typename Motors, typename Odometers>
-uint16_t EEMEM MotorsController<Motors, Odometers>::ee_r_d_gain_x100_ = 0;
-
+Pid MotorsController<Motors, Odometers>::right_pid_;
 
 #endif

@@ -11,22 +11,28 @@ typedef int16_t Ftype;
  * формат помечены суффиксом _x100.
  */
 
+class PidConfig
+{
+    // Ftype i_max;
+    // Ftype i_min;
+    // Ftype i_gain_x100;
+    // Ftype p_gain_x100;
+    // Ftype d_gain_x100;
+    //
+    // Ftype max_value;
+    // Ftype min_value;
+};
+
 class Pid
 {
 public:
     Pid();
-    Ftype update(uint16_t set_rps, uint16_t real_rps);
-
-    int16_t i_max;
-    int16_t i_min;
-    Ftype i_gain_x100;
-    Ftype p_gain_x100;
-    Ftype d_gain_x100;
-
+    Ftype update(Ftype set_rps, Ftype real_rps);
+    // void set_config(PidConfig* config);
+    //
 private:
-    int16_t i_state_;
-    int16_t max_value_;
-    int16_t min_value_;
+    // PidConfig config_;
+    // int16_t i_state_;
 };
 
 #endif

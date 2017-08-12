@@ -7,15 +7,12 @@ extern "C"
 #include <avr/interrupt.h>
 }
 
-#define M_L_1_HIGH {PORTD |= (1<<7);}
-#define M_L_1_LOW {PORTD &= ~(1<<7);}
-#define M_L_2_HIGH {PORTB |= (1<<0);}
-#define M_L_2_LOW {PORTB &= ~(1<<0);}
+#include "portable/atmega88pa/pio.h"
 
-#define M_R_1_HIGH {PORTB |= (1<<1);}
-#define M_R_1_LOW {PORTB &= ~(1<<1);}
-#define M_R_2_HIGH {PORTB |= (1<<2);}
-#define M_R_2_LOW {PORTB &= ~(1<<2);}
+typedef PioD7 LeftMotor1Pin;
+typedef PioB0 LeftMotor2Pin;
+typedef PioB1 RightMotor1Pin;
+typedef PioB2 RightMotor2Pin;
 
 #define LEFT_PWM (OCR0A)
 #define RIGHT_PWM (OCR0B)
@@ -23,12 +20,25 @@ extern "C"
 class Motors
 {
 public:
+    enum {
+        UP    = -1,
+        STOP  = 0,
+        DOWN  = 1
+    };
+
+    enum { MAX_DUTY = 0xff };
+
+public:
     static inline void init()
     {
         //ports
-        DDRD |= (1<<5) | (1<<6); // OC0B, OC0A
-        DDRD |= (1<<7); //M11
-        DDRB |= (1<<0) | (1<<1) | (1<<2); //M12, M21, M22
+        LeftMotor1Pin::setOutput();
+        LeftMotor2Pin::setOutput();
+        RightMotor1Pin::setOutput();
+        RightMotor2Pin::setOutput();
+
+        PioD5::setOutput(); //OC0B
+        PioD6::setOutput(); //OC0A
 
         //pwm
         TCCR0A |= (1<<COM0A1) | // OCR0A non-inverting mode
@@ -43,7 +53,7 @@ public:
         set_dir(STOP, STOP);
     }
 
-    static inline void set_pwm(uint8_t left, uint8_t right)
+    static inline void set_duty(uint8_t left, uint8_t right)
     {
         LEFT_PWM = left;
         RIGHT_PWM = right;
@@ -52,31 +62,21 @@ public:
     static void set_dir(int8_t left, int8_t right)
     {
         //left
-        M_L_1_LOW;
-        M_L_2_LOW;
+        LeftMotor1Pin::setLow();
+        LeftMotor2Pin::setLow();
         if(left > 0)
-            M_L_1_HIGH;
+            LeftMotor1Pin::setHigh();
         if(left < 0)
-            M_L_2_HIGH;
+            LeftMotor2Pin::setHigh();
 
         //right
-        M_R_1_LOW;
-        M_R_2_LOW;
+        RightMotor1Pin::setLow();
+        RightMotor2Pin::setLow();
         if(right > 0)
-            M_R_1_HIGH;
+            RightMotor1Pin::setHigh();
         if(right < 0)
-            M_R_2_HIGH;
-
+            RightMotor2Pin::setHigh();
     }
-
-public:
-    enum {
-        RIGHT = -1,
-        STOP  = 0,
-        LEFT  = 1
-    };
-
-    enum { MAX_PWM = 0xff };
 };
 
 
