@@ -87,14 +87,12 @@ SRC =
 CPPSRC = ./main/$(TARGET).cpp \
 		 ./utils/pid.cpp
 
-# ifeq ($(MCU), atmega88p)
 CPPSRC += ./portable/atmega88pa/uart.cpp \
 		 ./portable/atmega88pa/motors.cpp \
 		 ./portable/atmega88pa/odometers.cpp \
 		 ./portable/atmega88pa/twi_slave.cpp \
 		 ./portable/atmega88pa/spi.cpp
 
-# endif
 
 
 # List Assembler source files here.

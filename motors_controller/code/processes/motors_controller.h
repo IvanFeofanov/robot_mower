@@ -16,31 +16,35 @@ class MotorsController
 public:
     static void init()
     {
-        load_config();
+        load_configs();
+        save_configs();
+
+        left_set_rps_ = 0;
+        right_set_rps_ = 0;
+        left_real_rps_ = 0;
+        right_real_rps_ = 0;
+
+        left_pid_ = Pid();
+        right_pid_ = Pid();
     }
 
     static void update()
     {
-        // static uint8_t left = 0;
-        // static uint8_t right = 0;
+        static uint8_t left = 0;
+        static uint8_t right = 0;
 
-        // //left
-        // if(Odometers::left_rps((uint16_t*)(&left_real_rps_)){
-        //     left_pwm = Mediator::pid[LEFT].update(
-        //             ABS(left_set_rps), left_real_rps_);
-        // }
-        //
-        // //right
-        // if(Odometers::right_rps((uint16_t*)(&left_real_rps_)){
-        //     right_pwm = Mediator::pid[RIGHT].update(
-        //             Mediator::set_rps[RIGHT] < 0 ?
-        //             -Mediator::set_rps[RIGHT] : Mediator::set_rps[RIGHT],
-        //             Mediator::real_rps[RIGHT]);
-        // }
-        //
-        // Motors::set_duty(left, right);
-        // Motors::set_dir(left_set_rps_, right_set_rps_);
+        //left
+        if(Odometers::left_rps((uint16_t*)(&left_real_rps_))){
+            left = left_pid_.update(ABS(left_set_rps_), left_real_rps_);
+        }
 
+        //right
+        if(Odometers::right_rps((uint16_t*)(&right_real_rps_))){
+            right = right_pid_.update(ABS(right_set_rps_), right_real_rps_);
+        }
+
+        Motors::set_duty(left, right);
+        Motors::set_dir(left_set_rps_, right_set_rps_);
     }
 
     static void set_input_rps(int16_t left, int16_t right)
@@ -61,29 +65,34 @@ public:
         *right = right_real_rps_;
     }
 
-    static void set_pid(Pid left, Pid right)
+    static void get_pid_configs(PidConfig** left, PidConfig** right)
     {
-        left_pid_ = left;
-        right_pid_ = right;
+        *left = left_pid_.get_pid_config_ptr();
+        *right = right_pid_.get_pid_config_ptr();
     }
 
-    static void pid(Pid* left, Pid* right)
+    static void save_configs()
     {
-        *left = left_pid_;
-        *right = right_pid_;
+        eeprom_busy_wait();
+        eeprom_update_block((&ee_pid_config_),
+                (void*)(left_pid_.get_pid_config_ptr()),
+                sizeof(PidConfig));
+        eeprom_busy_wait();
+        eeprom_update_block((&ee_pid_config_) + sizeof(PidConfig),
+                (void*)(right_pid_.get_pid_config_ptr()),
+                sizeof(PidConfig));
     }
 
-private:
-    static void save_config()
+    static void load_configs()
     {
-        // eeprom_update_word(&ee_r_d_gain_x100_, Mediator::pid[RIGHT].d_gain_x100);
-        // eeprom_busy_wait();
-    }
-
-    static void load_config()
-    {
-        // Mediator::pid[RIGHT].d_gain_x100 = eeprom_read_word(&ee_r_d_gain_x100_);
-        // eeprom_busy_wait();
+        eeprom_busy_wait();
+        eeprom_read_block((void*)(left_pid_.get_pid_config_ptr()),
+                (&ee_pid_config_),
+                sizeof(PidConfig));
+        eeprom_busy_wait();
+        eeprom_read_block((void*)(right_pid_.get_pid_config_ptr()),
+                (&ee_pid_config_) + sizeof(PidConfig),
+                sizeof(PidConfig));
     }
 
 private:
@@ -95,7 +104,7 @@ private:
     static Pid left_pid_;
     static Pid right_pid_;
 
-    static uint16_t EEMEM ee_r_d_gain_x100_;
+    static uint8_t EEMEM ee_pid_config_[sizeof(PidConfig) * 2];
 
 };
 
@@ -116,5 +125,10 @@ Pid MotorsController<Motors, Odometers>::left_pid_;
 
 template<typename Motors, typename Odometers>
 Pid MotorsController<Motors, Odometers>::right_pid_;
+
+
+template<typename Motors, typename Odometers>
+uint8_t MotorsController<Motors, Odometers>::ee_pid_config_[sizeof(PidConfig) * 2] EEMEM;
+
 
 #endif

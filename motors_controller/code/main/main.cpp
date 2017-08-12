@@ -10,12 +10,10 @@ extern "C"
 }
 
 // portable
-// #ifdef __AVR_ATmega88P__
 #include "portable/atmega88pa/motors.h"
 #include "portable/atmega88pa/odometers.h"
 #include "portable/atmega88pa/pio.h"
 #include "portable/atmega88pa/spi.h"
-// #endif
 
 // automats
 #include "processes/motors_controller.h"
@@ -27,7 +25,7 @@ typedef PioC2 Led1;
 typedef PioC3 Led2;
 
 // automats
-//MotorsController<Motors, Odometers> motors_controller;
+typedef MotorsController<Motors, Odometers> MotorsCtrl;
 
 static inline void init()
 {
@@ -41,8 +39,7 @@ static inline void init()
 
     sei();
 
-    // motors_controller.init();
-    // TwiInterface<Twi>::init();
+    MotorsCtrl::init();
 }
 
 static inline void loop()
