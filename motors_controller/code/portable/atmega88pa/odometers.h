@@ -42,7 +42,7 @@ public:
     static CounterType left_counter()
     {
         CounterType tmp = 0;
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             tmp = left_counter_;
         }
@@ -52,7 +52,7 @@ public:
     static CounterType right_counter()
     {
         CounterType tmp = 0;
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             tmp = right_counter_;
         }
@@ -61,7 +61,7 @@ public:
 
     static void reset_right_counter()
     {
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             left_counter_ = 0;
         }
@@ -69,7 +69,7 @@ public:
 
     static void reset_left_counter()
     {
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             right_counter_ = 0;
         }
@@ -79,7 +79,7 @@ public:
     {
         uint32_t time;
 
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             time = left_time_;
             left_time_ = 0;
@@ -99,7 +99,7 @@ public:
     {
         uint32_t time;
 
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             time = right_time_;
             right_time_ = 0;
@@ -126,7 +126,7 @@ public:
             n = 0;
         }
 
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             if(is_left_tc_overflow_){
                 left_time_ = MAX_TIME;
@@ -150,7 +150,7 @@ public:
             n = 0;
         }
 
-        ATOMIC_BLOCK(ATOMIC_FORCEON)
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
             if(is_right_tc_overflow_){
                 right_time_ = MAX_TIME;

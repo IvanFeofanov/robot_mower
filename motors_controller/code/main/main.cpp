@@ -17,7 +17,7 @@ extern "C"
 
 // automats
 #include "processes/motors_controller.h"
-
+#include "processes/spi_face.h"
 // debug
 
 // hardware
@@ -26,25 +26,27 @@ typedef PioC3 Led2;
 
 // automats
 typedef MotorsController<Motors, Odometers> MotorsCtrl;
+typedef SpiFace<SpiSlave, Odometers,  MotorsCtrl> SpiInterface;
 
 static inline void init()
 {
-    Motors::init();
-    Odometers::init();
-
     Led1::setOutput();
     Led2::setOutput();
 
+    Motors::init();
+    Odometers::init();
     SpiSlave::init();
 
-    sei();
-
     MotorsCtrl::init();
+    SpiInterface::init();
+
+    sei();
 }
 
 static inline void loop()
 {
-    // motors_controller.update();
+    MotorsCtrl::update();
+    SpiInterface::update();
 }
 
 int main()
