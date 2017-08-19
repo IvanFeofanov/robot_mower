@@ -12,7 +12,7 @@ extern "C"
 //portable
 #include "portable/atmega328/time.h"
 #include "portable/atmega328/uart.h"
-#include "portable/atmega328/twi_master.h"
+#include "portable/atmega328/spi_master.h"
 #include "portable/atmega328/pio.h"
 #include "portable/atmega328/mower_motor.h"
 #include "portable/atmega328/adc_man.h"
@@ -29,7 +29,7 @@ extern "C"
 
 // hardware
 enum {  MOTOR_CONTROLLER_TWI_ADDRESS = 2 };
-typedef PioB5 LedPin;
+typedef PioD2 LedPin;
 typedef PioD6 ButtonPin;
 typedef Adc0 AdcLeftPot;
 typedef Adc1 AdcRightPot;
@@ -44,7 +44,8 @@ typedef BumperSensor<AdcLeftPot, AdcRightPot> Bumper;
 typedef PerimeterSensor<AdcPerimeterSensor> Perimeter;
 typedef OneLed<LedPin> LedIndicator;
 typedef Mower<MowerMotor> Mower_;
-typedef MotorsControllerClient<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> DriveMotors;
+// typedef MotorsControllerClient<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> DriveMotors;
+typedef int DriveMotors;
 typedef Robot<
             Button,
             Bumper,
@@ -60,9 +61,10 @@ static inline void init()
     // hardware
     Time::init();
     Adc::init();
-    MowerMotor::init();
-    TwiMaster::init();
+    // MowerMotor::init(); // ломает spi
+    SpiMaster::init();
     Serial::init();
+
 
     sei(); //enable interrupts
 
@@ -70,8 +72,8 @@ static inline void init()
     Bumper::init();
     Perimeter::init();
     LedIndicator::init();
-    Mower_::init();
-    DriveMotors::init();
+    // Mower_::init();
+    // DriveMotors::init();
 
     Robot_::init();
 }
@@ -82,9 +84,9 @@ static inline void loop()
     Bumper::update();
     Perimeter::update();
     LedIndicator::update();
-    Mower_::update();
-    DriveMotors::update();
-
+    // Mower_::update();
+    // // DriveMotors::update();
+    //
     Robot_::update();
 }
 

@@ -19,13 +19,11 @@ public:
     static void init()
     {
         Debug::print("Robot init\n");
-        DriveMotors::attachSpeedDataChange(&newSpeed);
-        DriveMotors::attachOdometerDataChange(&newOdometer);
     }
 
     static void update()
     {
-        DriveMotors::setSpeed(100, 50);
+        // DriveMotors::setSpeed(100, 50);
     }
 
     static void newSpeed(int16_t left, int16_t right)
