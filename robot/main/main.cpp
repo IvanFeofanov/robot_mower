@@ -44,8 +44,8 @@ typedef BumperSensor<AdcLeftPot, AdcRightPot> Bumper;
 typedef PerimeterSensor<AdcPerimeterSensor> Perimeter;
 typedef OneLed<LedPin> LedIndicator;
 typedef Mower<MowerMotor> Mower_;
-// typedef MotorsControllerClient<TwiMaster, MOTOR_CONTROLLER_TWI_ADDRESS> DriveMotors;
-typedef int DriveMotors;
+typedef MotorsController<SpiMaster, SpiMaster::SsPin> DriveMotors;
+// typedef int DriveMotors;
 typedef Robot<
             Button,
             Bumper,
@@ -73,9 +73,11 @@ static inline void init()
     Perimeter::init();
     LedIndicator::init();
     // Mower_::init();
-    // DriveMotors::init();
+    DriveMotors::init();
 
     Robot_::init();
+
+    DriveMotors::set_speed(100, 50);
 }
 
 static inline void loop()
@@ -85,7 +87,7 @@ static inline void loop()
     Perimeter::update();
     LedIndicator::update();
     // Mower_::update();
-    // // DriveMotors::update();
+    DriveMotors::update();
     //
     Robot_::update();
 }
