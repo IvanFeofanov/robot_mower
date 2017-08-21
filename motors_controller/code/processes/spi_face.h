@@ -5,29 +5,10 @@
 
 #include "utils/atomic.h"
 #include "utils/pid.h"
+#include "utils/flag.h"
 
-#include "processes/spi_slave_transfer.h"
-
-#define CMD_NOP         (0x00)
-#define CMD_SPEED       (0x10)
-#define CMD_COUNTER     (0x20)
-#define CMD_COUNTER_C   (0x30)
-#define CMD_W_REG       (0x40)
-#define CMD_R_REG       (0x50)
-
-#define REG_LEFT_P      (0x0)
-#define REG_LEFT_I      (0x1)
-#define REG_LEFT_I_MAX  (0x2)
-#define REG_LEFT_I_MIN  (0x3)
-#define REG_LEFT_D      (0x4)
-#define REG_RIGHT_P     (0x5)
-#define REG_RIGHT_I     (0x6)
-#define REG_RIGHT_I_MAX (0x7)
-#define REG_RIGHT_I_MIN (0x8)
-#define REG_RIGHT_D     (0x9)
-
-#define REG_MASK        (0x0f)
-#define CMD_MASK        (0xf0)
+#include "processes/spi_slave_interface.h"
+#include "processes/spi_face_defs.h"
 
 template<
     typename SpiSlave,
@@ -39,41 +20,66 @@ class SpiFace
 public:
     static inline void init()
     {
-        state_ = ST_WAITING_4_CMD;
-
-        transfer_ = SpiSlaveTransfer<SpiSlave>(&state_);
-
-        is_new_speed_           = false;
-        is_new_pid_config_      = false;
-        is_reset_counter_       = false;
-        is_interface_ready_     = true;
-
         left_set_speed_  = 0;
         right_set_speed_ = 0;
 
-        write_values();
+		// pid configs (to client)
+        PidConfig* left_pid_cfg_ptr;
+        PidConfig* right_pid_cfg_ptr;
 
-        SpiSlave::attach_handler(&request_handler);
-        SpiSlave::set_data(get_status());
-        SpiSlave::enable();
-    }
+        MotorsController::get_pid_configs(
+                &left_pid_cfg_ptr, &right_pid_cfg_ptr);
+
+        left_pid_config_  = *left_pid_cfg_ptr;
+        right_pid_config_ = *right_pid_cfg_ptr;
+
+        // write_values();
+        left_real_speed_	= 150;
+        right_real_speed_	= 151;
+
+        left_counter_  = 85;
+        right_counter_ = 86;
+
+
+		Interface::init(get_status());
+		Interface::set_register(REG_LEFT_SPEED, &left_real_speed_,
+                &left_set_speed_, 2, &flag_new_set_speed_);
+		Interface::set_register(REG_LEFT_COUNTER, &left_counter_,
+                0, 4, 0);
+		Interface::set_register(REG_RIGHT_SPEED, &right_real_speed_,
+                &right_set_speed_, 2, &flag_new_set_speed_);
+		Interface::set_register(REG_RIGHT_COUNTER, &right_counter_,
+                0, 4, 0);
+		Interface::set_register(REG_LEFT_P, &(left_pid_config_.p_gain_x100),
+                &(left_pid_config_.p_gain_x100), 2, &flag_new_pid_config_);
+		Interface::set_register(REG_LEFT_I,&(left_pid_config_.i_gain_x100),
+                &(left_pid_config_.i_gain_x100), 2, &flag_new_pid_config_);
+		Interface::set_register(REG_LEFT_I_MAX, &(left_pid_config_.i_max),
+                &(left_pid_config_.i_max), 2, &flag_new_pid_config_);
+		Interface::set_register(REG_LEFT_I_MIN, &(left_pid_config_.i_min),
+                &(left_pid_config_.i_min), 2, &flag_new_pid_config_);
+		Interface::set_register(REG_RIGHT_P, &(right_pid_config_.p_gain_x100),
+                &(right_pid_config_.p_gain_x100), 2, &flag_new_pid_config_);
+		Interface::set_register(REG_RIGHT_I, &(right_pid_config_.i_gain_x100),
+                &(right_pid_config_.i_gain_x100), 2, &flag_new_pid_config_);
+		Interface::set_register(REG_RIGHT_I_MAX, &(right_pid_config_.i_max),
+                &(right_pid_config_.i_max), 2, &flag_new_pid_config_);
+		Interface::set_register(REG_RIGHT_I_MIN, &(right_pid_config_.i_min),
+                &(right_pid_config_.i_min), 2, &flag_new_pid_config_);
+        }
 
     static inline void update()
     {
         Atomic atomic;
 
-        if(!is_interface_ready_)
-            return;
-
+		// to divice
         // set speed
-        if(is_new_speed_){
-            is_new_speed_ = false;
+        if(flag_new_set_speed_.check()){
             MotorsController::set_input_rps(left_set_speed_, right_set_speed_);
         }
 
         // set pid config
-        if(is_new_pid_config_){
-
+        if(flag_new_pid_config_.is_set()){
             PidConfig* left_pid_cfg_ptr;
             PidConfig* right_pid_cfg_ptr;
 
@@ -84,104 +90,62 @@ public:
             *right_pid_cfg_ptr  = right_pid_config_;
         }
 
-        // reset odometer
-        if(is_reset_counter_){
-            is_reset_counter_ = false;
-            Odometers::reset_left_counter();
-            Odometers::reset_right_counter();
-        }
+		// to client
+        // write_values();
 
-        write_values();
-        SpiSlave::set_data(get_status());
+		Interface::set_status(get_status());
 
         atomic.release();
 
-        // save pid configs
-        if(is_new_pid_config_){
-            is_new_pid_config_ = false;
+         // save pid configs
+        if(flag_new_pid_config_.check()){
             MotorsController::save_configs();
         }
     }
 
 private:
-    static void request_handler()
-    {
-        is_interface_ready_ = false;
-        uint8_t data = SpiSlave::get_data();
+	typedef SpiSlaveInterface<SpiSlave, NUM_REGS> Interface;
 
-        if(state_ == ST_WAITING_4_CMD){
-            switch(data & CMD_MASK)
-            {
-            case CMD_W_REG:
-                break;
-
-            case CMD_R_REG:
-                break;
-
-            default:
-                break;
-            }
-        }else if(state_ == ST_TX){
-            transfer_.update();
-        }
-
-        if(state_ == ST_END){
-            state_ = ST_WAITING_4_CMD;
-            SpiSlave::set_data(get_status());
-            is_interface_ready_ = true;
-        }
-    }
-
+	// to client
     static void write_values()
     {
         // real speed
-        MotorsController::real_rps(
-                &left_real_speed_, &right_real_speed_);
+		if(	Interface::is_available(REG_LEFT_SPEED) &&
+			Interface::is_available(REG_RIGHT_SPEED))
+		{
+			int16_t left, right;
+			MotorsController::real_rps(&left, &right);
+			left_real_speed_	= left;
+			right_real_speed_	= right;
+		}
 
         // counter
-        left_counter_ = Odometers::left_counter();
-        right_counter_ = Odometers::right_counter();
-
-        // pid configs
-        PidConfig* left_pid_cfg_ptr;
-        PidConfig* right_pid_cfg_ptr;
-
-        MotorsController::get_pid_configs(
-                &left_pid_cfg_ptr, &right_pid_cfg_ptr);
-
-        left_pid_config_  = *left_pid_cfg_ptr;
-        right_pid_config_ = *right_pid_cfg_ptr;
+		if(Interface::is_available(REG_LEFT_COUNTER)){
+			left_counter_  = Odometers::left_counter();
+		}
+		if(Interface::is_available(REG_RIGHT_COUNTER)){
+			right_counter_ = Odometers::right_counter();
+		}
     }
 
     static uint8_t get_status()
     {
-        return 0;
+        return 42;
     }
 
 private:
-    static uint8_t state_;
-    enum{
-        ST_WAITING_4_CMD,
-        ST_TX,
-        ST_END
-    };
+	static Flag	 flag_new_set_speed_;
+	static Flag	 flag_new_pid_config_;
 
-    static SpiSlaveTransfer<SpiSlave> transfer_;
+    static int16_t  left_real_speed_;
+    static int16_t  left_set_speed_;
+    static uint32_t left_counter_;
+    static int16_t  right_real_speed_;
+    static int16_t  right_set_speed_;
+    static uint32_t right_counter_;
 
-    volatile static int16_t  left_real_speed_;
-    volatile static int16_t  left_set_speed_;
-    volatile static uint32_t left_counter_;
-    volatile static int16_t  right_real_speed_;
-    volatile static int16_t  right_set_speed_;
-    volatile static uint32_t right_counter_;
-
-    volatile static PidConfig left_pid_config_;
-    volatile static PidConfig right_pid_config_;
-
-    volatile static bool is_new_speed_;
-    volatile static bool is_new_pid_config_;
-    volatile static bool is_reset_counter_;
-    volatile static bool is_interface_ready_;
+    static PidConfig left_pid_config_;
+    static PidConfig right_pid_config_;
 };
 
 template<
@@ -189,102 +153,69 @@ template<
     typename Odometers,
     typename MotorsController
     >
-uint8_t SpiFace<SpiSlave, Odometers, MotorsController>::state_;
+Flag SpiFace<SpiSlave, Odometers, MotorsController>::flag_new_set_speed_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile SpiSlaveTransfer<SpiSlave>
-SpiFace<SpiSlave, Odometers, MotorsController>::transfer_;
+Flag SpiFace<SpiSlave, Odometers, MotorsController>::flag_new_pid_config_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile int16_t SpiFace<SpiSlave, Odometers, MotorsController>::left_real_speed_;
+int16_t SpiFace<SpiSlave, Odometers, MotorsController>::left_real_speed_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile int16_t SpiFace<SpiSlave, Odometers, MotorsController>::left_set_speed_;
+int16_t SpiFace<SpiSlave, Odometers, MotorsController>::left_set_speed_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile uint32_t SpiFace<SpiSlave, Odometers, MotorsController>::left_counter_;
+uint32_t SpiFace<SpiSlave, Odometers, MotorsController>::left_counter_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile int16_t SpiFace<SpiSlave, Odometers, MotorsController>::right_real_speed_;
+int16_t SpiFace<SpiSlave, Odometers, MotorsController>::right_real_speed_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile int16_t SpiFace<SpiSlave, Odometers, MotorsController>::right_set_speed_;
+int16_t SpiFace<SpiSlave, Odometers, MotorsController>::right_set_speed_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile uint32_t SpiFace<SpiSlave, Odometers, MotorsController>::right_counter_;
+uint32_t SpiFace<SpiSlave, Odometers, MotorsController>::right_counter_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile PidConfig SpiFace<SpiSlave, Odometers, MotorsController>::left_pid_config_;
+PidConfig SpiFace<SpiSlave, Odometers, MotorsController>::left_pid_config_;
 
 template<
     typename SpiSlave,
     typename Odometers,
     typename MotorsController
     >
-volatile PidConfig SpiFace<SpiSlave, Odometers, MotorsController>::right_pid_config_;
-
-template<
-    typename SpiSlave,
-    typename Odometers,
-    typename MotorsController
-    >
-bool SpiFace<SpiSlave, Odometers, MotorsController>::is_new_speed_;
-
-template<
-    typename SpiSlave,
-    typename Odometers,
-    typename MotorsController
-    >
-bool SpiFace<SpiSlave, Odometers, MotorsController>::is_new_pid_config_;
-
-template<
-    typename SpiSlave,
-    typename Odometers,
-    typename MotorsController
-    >
-bool SpiFace<SpiSlave, Odometers, MotorsController>::is_reset_counter_;
-
-template<
-    typename SpiSlave,
-    typename Odometers,
-    typename MotorsController
-    >
-bool SpiFace<SpiSlave, Odometers, MotorsController>::is_interface_ready_;
-
-
-
-
+PidConfig SpiFace<SpiSlave, Odometers, MotorsController>::right_pid_config_;
 
 #endif
