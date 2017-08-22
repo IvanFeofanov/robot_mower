@@ -34,6 +34,7 @@ public:
         right_pid_config_ = *right_pid_cfg_ptr;
 
         // write_values();
+        // DEBUG
         left_real_speed_	= 150;
         right_real_speed_	= 151;
 

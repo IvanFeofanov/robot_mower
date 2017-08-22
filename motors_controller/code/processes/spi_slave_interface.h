@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "utils/flag.h"
+#include "utils/crc8.h"
 
 #include "spi_face_defs.h"
 
@@ -46,10 +47,12 @@ public:
 
 				if(registers_[tx_id_].tx_buffer || registers_[tx_id_].rx_buffer){
 					index_ = 0;
+                    crc_ = 0xff;
 					registers_[tx_id_].is_available = false;
                     state_ = (data & CMD_MASK) == CMD_WR_REG ? ST_WR : ST_R;
 
 					if(registers_[tx_id_].tx_buffer){
+                        crc_ = crc8_one_byte(registers_[tx_id_].tx_buffer[index_], crc_);
 						SpiSlave::set_data(registers_[tx_id_].tx_buffer[index_]);// first tx byte
 					}
 
@@ -62,7 +65,7 @@ public:
 				SpiSlave::set_data(status_);
 			}
 		}else{ // transfering
-			if(registers_[tx_id_].rx_buffer && state_ == ST_WR){
+			if(registers_[tx_id_].rx_buffer && state_ == ST_WR && index_ < registers_[tx_id_].len){
 				registers_[tx_id_].rx_buffer[index_] = SpiSlave::get_data();
 			}
 
@@ -70,12 +73,13 @@ public:
 
 			if(index_ < registers_[tx_id_].len){
 				if(registers_[tx_id_].tx_buffer){
+                    crc_ = crc8_one_byte(registers_[tx_id_].tx_buffer[index_], crc_);
 					SpiSlave::set_data(registers_[tx_id_].tx_buffer[index_]);
 				}else{
                     SpiSlave::set_data(0xff);
                 }
 			}else if(index_ ==  registers_[tx_id_].len){
-
+                SpiSlave::set_data(crc_);
             }else{
 				registers_[tx_id_].is_available = true;
 
@@ -120,6 +124,7 @@ private:
 	};
 	static uint8_t tx_id_;
 	static uint8_t index_;
+    static uint8_t crc_;
 };
 
 template<
@@ -151,6 +156,13 @@ template<
 	uint8_t	 NUM_BUFFERS
 	>
 uint8_t SpiSlaveInterface<SpiSlave, NUM_BUFFERS>::index_;
+
+template<
+	typename SpiSlave,
+	uint8_t	 NUM_BUFFERS
+	>
+uint8_t SpiSlaveInterface<SpiSlave, NUM_BUFFERS>::crc_;
+
 
 
 #endif

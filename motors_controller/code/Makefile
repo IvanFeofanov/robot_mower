@@ -87,7 +87,8 @@ SRC =
 CPPSRC = ./main/$(TARGET).cpp \
 		 ./utils/pid.cpp\
 		 ./utils/atomic.cpp \
-		 ./utils/flag.cpp
+		 ./utils/flag.cpp \
+		 ./utils/crc8.cpp
 
 CPPSRC += ./portable/atmega88pa/uart.cpp \
 		 ./portable/atmega88pa/motors.cpp \
