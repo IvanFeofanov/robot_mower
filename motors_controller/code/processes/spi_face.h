@@ -33,13 +33,12 @@ public:
         left_pid_config_  = *left_pid_cfg_ptr;
         right_pid_config_ = *right_pid_cfg_ptr;
 
-        // write_values();
+        write_values();
         // DEBUG
-        left_real_speed_	= 150;
-        right_real_speed_	= 151;
-
-        left_counter_  = 85;
-        right_counter_ = 86;
+        // left_real_speed_	= 150;
+        // right_real_speed_	= 151;
+        // left_counter_  = 85;
+        // right_counter_ = 86;
 
 
 		Interface::init(get_status());
@@ -92,7 +91,7 @@ public:
         }
 
 		// to client
-        // write_values();
+        write_values();
 
 		Interface::set_status(get_status());
 

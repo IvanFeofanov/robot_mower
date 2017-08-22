@@ -24,5 +24,5 @@ bool Flag::check()
 {
 	bool tmp = state_;
 	state_ = false;
-	return state_;
+	return tmp;
 }

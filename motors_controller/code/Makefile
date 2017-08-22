@@ -41,8 +41,8 @@
 
 
 # MCU name
-MCU = atmega328p
-# MCU = atmega88p
+# MCU = atmega328p
+MCU = atmega88p
 
 # Processor frequency.
 #     This will define a symbol, F_CPU, in all source code files equal to the
@@ -284,8 +284,8 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Type: avrdude -c ?
 # to get a full listing.
 
-AVRDUDE_PROGRAMMER = arduino
-# AVRDUDE_PROGRAMMER = usbasp
+# AVRDUDE_PROGRAMMER = arduino
+AVRDUDE_PROGRAMMER = usbasp
 
 # com1 = serial port. Use lpt1 to connect to parallel port.
 AVRDUDE_PORT = /dev/ttyUSB0    # programmer connected to serial device
