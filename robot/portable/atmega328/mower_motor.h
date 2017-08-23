@@ -20,25 +20,26 @@ public:
     static inline void init()
     {
         // Timer/Counter2 with pwm
-        TCCR2A  = (1<<COM2A1) // OC2A non-inverting mode
+        TCCR2A  = (1<<COM2B1) // OC2A non-inverting mode
                 | (1<<WGM21)  // fast pwm
                 | (1<<WGM20);
         TCCR2B = (1<<CS20);   // clk/1
 
         //port
-        DDRB |= (1<<3);
+        DDRD |= (1<<3);
 
     }
 
     static inline void setPwm(uint8_t value)
     {
         if(value > MIN_PWM){
-            DDRB |= (1<<3);
+            DDRD |= (1<<3);
         }else{
-            DDRB &= ~(1<<3);
+            DDRD &= ~(1<<3);
+            PORTD &= ~(1<<3);
         }
 
-        OCR2A = value;
+        OCR2B = value;
     }
 
 };
