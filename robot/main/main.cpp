@@ -76,8 +76,6 @@ static inline void init()
     DriveMotors::init();
 
     Robot_::init();
-
-    DriveMotors::set_speed(100, 50);
 }
 
 static inline void loop()

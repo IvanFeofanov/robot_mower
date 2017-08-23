@@ -19,30 +19,26 @@ public:
     static void init()
     {
         Debug::print("Robot init\n");
+        DriveMotors::set_left_speed(0);
+        DriveMotors::set_right_speed(0);
     }
 
     static void update()
     {
-        // DriveMotors::setSpeed(100, 50);
-    }
+        DriveMotors::set_left_speed(50);
+        DriveMotors::set_right_speed(50);
 
-    static void newSpeed(int16_t left, int16_t right)
-    {
         Debug::print("speed: l = ");
-        Debug::print(left);
+        Debug::print(DriveMotors::real_left_speed());
         Debug::print(" r = ");
-        Debug::print(right);
-        Debug::print(" ");
-    }
-
-    static void newOdometer(uint32_t left, uint32_t right)
-    {
-        Debug::print("odometers: l = ");
-        Debug::print(left);
-        Debug::print(" r = ");
-        Debug::print(right);
+        Debug::print(DriveMotors::real_right_speed());
         Debug::println();
 
+        Debug::print("odometers: l = ");
+        Debug::print(DriveMotors::left_counter());
+        Debug::print(" r = ");
+        Debug::print(DriveMotors::right_counter());
+        Debug::println();
     }
 
 private:
