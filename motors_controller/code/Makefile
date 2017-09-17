@@ -93,8 +93,7 @@ CPPSRC = ./main/$(TARGET).cpp \
 CPPSRC += ./portable/atmega88pa/uart.cpp \
 		 ./portable/atmega88pa/motors.cpp \
 		 ./portable/atmega88pa/odometers.cpp \
-		 ./portable/atmega88pa/twi_slave.cpp \
-		 ./portable/atmega88pa/spi.cpp
+		 ./portable/atmega88pa/twi_slave.cpp
 
 
 
