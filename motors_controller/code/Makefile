@@ -41,8 +41,8 @@
 
 
 # MCU name
-# MCU = atmega328p
-MCU = atmega88p
+MCU = atmega328p
+# MCU = atmega88p
 
 # Processor frequency.
 #     This will define a symbol, F_CPU, in all source code files equal to the
@@ -459,8 +459,8 @@ gccversion :
 
 # Program the device.
 program: $(TARGET).hex $(TARGET).eep
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
-	# avrdude -pm328p -carduino -P/dev/ttyUSB0 -b57600 -D -Uflash:w:main.hex:a
+	# $(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
+	avrdude -pm328p -carduino -P/dev/ttyUSB0 -b57600 -D -Uflash:w:main.hex:a
 
 
 # Generate avr-gdb config/init file which does the following:

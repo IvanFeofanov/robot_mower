@@ -14,10 +14,12 @@ extern "C"
 #include "portable/atmega88pa/odometers.h"
 #include "portable/atmega88pa/pio.h"
 #include "portable/atmega88pa/spi.h"
+#include "portable/atmega88pa/twi_slave.h"
 
 // automats
 #include "processes/motors_controller.h"
-#include "processes/spi_face.h"
+#include "processes/twi_face.h" 
+
 // debug
 
 // hardware
@@ -26,7 +28,7 @@ typedef PioC3 Led2;
 
 // automats
 typedef MotorsController<Motors, Odometers> MotorsCtrl;
-typedef SpiFace<SpiSlave, Odometers,  MotorsCtrl> SpiInterface;
+typedef TwiFace<Twi, Odometers,  MotorsCtrl> TwiInterface;
 
 static inline void init()
 {
@@ -35,10 +37,9 @@ static inline void init()
 
     Motors::init();
     Odometers::init();
-    SpiSlave::init();
 
     MotorsCtrl::init();
-    SpiInterface::init();
+    TwiInterface::init();
 
     sei();
 }
@@ -46,7 +47,7 @@ static inline void init()
 static inline void loop()
 {
     MotorsCtrl::update();
-    SpiInterface::update();
+    TwiInterface::update();
 }
 
 int main()

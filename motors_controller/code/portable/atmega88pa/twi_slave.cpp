@@ -2,5 +2,5 @@
 
 ISR(TWI_vect)
 {
-    Twi::interruptHandler();
+    Twi::interrupt_handler();
 }
