@@ -12,7 +12,7 @@ extern "C"
 typedef PioD7 LeftMotor1Pin;
 typedef PioB0 LeftMotor2Pin;
 typedef PioB1 RightMotor1Pin;
-typedef PioC5 RightMotor2Pin;
+typedef PioB2 RightMotor2Pin;
 
 #define LEFT_PWM (OCR0A)
 #define RIGHT_PWM (OCR0B)
