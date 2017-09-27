@@ -88,6 +88,7 @@ CPPSRC = ./main/$(TARGET).cpp \
 		 ./portable/atmega328/uart.cpp \
 		 ./portable/atmega328/time.cpp \
 		 ./portable/atmega328/spi_master.cpp \
+		 ./portable/atmega328/twi_master.cpp \
 		 ./portable/atmega328/adc_man.cpp \
 		 ./utils/pid.cpp \
 		 ./utils/map.cpp \
