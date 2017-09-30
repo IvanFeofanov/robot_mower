@@ -1,115 +1,47 @@
 #ifndef MOTORS_CONTROLLER_CLIENT_H
 #define MOTORS_CONTROLLER_CLIENT_H
 
-#include "utils/crc8.h"
-#include "spi_face_defs.h"
+//TODO переименовать файл в motors_controller
+
+#include "motors_controller_twi_face.h"
 
 template<
-    typename SpiMaster,
-    typename CePin
+    typename TwiMaster
     >
 class MotorsController
 {
 public:
     static inline void init()
     {
-        left_set_speed_     = 0;
-        right_set_speed_    = 0;
         left_real_speed_    = 0;
         right_real_speed_   = 0;
         left_counter_       = 0;
         right_counter_      = 0;
-
-        state_ = ST_TX_SPEED;
-        len_ = 0;
-        last_time_ = 0;
     }
 
     static inline void update()
     {
-        if(!transfer_update())
-            return;
+        // real speed
+        request_register(MCTF_REG_LEFT_SPEED, 2);
+        read_register(&left_real_speed_, 2);
+        request_register(MCTF_REG_RIGHT_SPEED, 2);
+        read_register(&right_real_speed_, 2);
 
-        uint8_t is_valid_data = true;
-
-        switch(state_)
-        {
-        case ST_TX_SPEED:
-            buffer_[0] = CMD_WR_REG | (REG_MASK & REG_LEFT_SPEED);
-            memcpy(buffer_ + 1, &left_set_speed_, 2);
-            buffer_[4] = CMD_WR_REG | (REG_MASK & REG_RIGHT_SPEED);
-            memcpy(buffer_ + 5, &right_set_speed_, 2);
-
-            CePin::setLow();
-            transfer(8);
-
-            state_ = ST_RX_SPEED;
-            break;
-
-        case ST_RX_SPEED:
-            CePin::setHigh();
-
-            if(calc_crc8(buffer_+1, 2) == buffer_[3]){
-                memcpy(&left_real_speed_, buffer_+1, 2);
-            }else{
-                is_valid_data = false;
-            }
-
-            if(calc_crc8(buffer_+5, 2) == buffer_[7]){
-                memcpy(&right_real_speed_, buffer_+5, 2);
-            }else{
-                is_valid_data = false;
-            }
-
-            if(is_valid_data){
-                state_ = ST_CMD_COUNTER;
-            }else{
-                state_ = ST_TX_SPEED;
-            }
-            break;
-
-        case ST_CMD_COUNTER:
-            buffer_[0] = CMD_R_REG | (REG_MASK & REG_LEFT_COUNTER);
-            buffer_[6] = CMD_R_REG | (REG_MASK & REG_RIGHT_COUNTER);
-
-            CePin::setLow();
-            transfer(12);
-
-            state_ = ST_RX_COUNTER;
-            break;
-
-        case ST_RX_COUNTER:
-            CePin::setHigh();
-
-            if(calc_crc8(buffer_+1, 4) == buffer_[5]){
-                memcpy(&left_counter_, buffer_+1, 4);
-            }else{
-                is_valid_data = false;
-            }
-
-            if(calc_crc8(buffer_+7, 4) == buffer_[11]){
-                memcpy(&right_counter_, buffer_+7, 4);
-            }else{
-                is_valid_data = false;
-            }
-
-            if(is_valid_data){
-                state_ = ST_TX_SPEED;
-            }else{
-                state_ = ST_RX_COUNTER;
-            }
-            break;
-        }
+        // counter
+        request_register(MCTF_REG_LEFT_COUNTER, 4);
+        read_register(&left_counter_, 4);
+        request_register(MCTF_REG_RIGHT_COUNTER, 4);
+        read_register(&right_counter_, 4);
     }
 
     static void set_left_speed(int16_t left)
     {
-        left_set_speed_ = left;
+        write_register(MCTF_REG_LEFT_SPEED, left);
     }
 
     static void set_right_speed(int16_t right)
     {
-        right_set_speed_ = right;
+        write_register(MCTF_REG_RIGHT_SPEED, right);
     }
 
     static int16_t real_left_speed()
@@ -133,59 +65,38 @@ public:
     }
 
 private:
-    static void transfer(uint16_t len)
+    static void request_register(uint8_t address, uint16_t size)
     {
-        if(len > 0){
-            SpiMaster::transfer(buffer_, buffer_, 1);
-            last_time_ = Time::now();
-        }
+        while(!TwiMaster::is_ready());
 
-        if(len > 1){
-            len_ = len;
-            index_ = 1;
-        }else{
-            len_ = 0;
-        }
-
+        buffer_[0] = address;
+        TwiMaster::request_from(MCTF_DEVICE_ADDRESS, buffer_, 1, buffer_, size);
     }
 
-    static bool transfer_update()
+    static bool read_register(void* var, uint16_t len)
     {
-        if(SpiMaster::is_available() && ((Time::now() - last_time_) >= 1)){
-            if(len_ != 0){
-                SpiMaster::transfer(buffer_+index_, buffer_+index_, 1);
+        while(!TwiMaster::is_ready());
 
-                index_++;
-                last_time_ = Time::now();
-
-                if(index_ >= len_){
-                    len_ = 0;
-                }
-                return false;
-            }else{
-                return true;
-            }
+        if(TwiMaster::available() == len){
+            memcpy(var, buffer_, len);
+            return true;
         }else{
             return false;
         }
     }
 
+    static void write_register(uint8_t address, int16_t data)
+    {
+        while(!TwiMaster::is_ready());
+
+        buffer_[0] = address;
+        memcpy(buffer_+1, &data, 2);
+        TwiMaster::write_to(MCTF_DEVICE_ADDRESS, buffer_, 3);
+    }
+
 private:
-    static uint8_t state_;
-    enum{
-        ST_TX_SPEED,
-        ST_RX_SPEED,
-        ST_CMD_COUNTER,
-        ST_RX_COUNTER
-    };
+    static uint8_t buffer_[8];
 
-    static uint8_t buffer_[16];
-    static uint8_t index_;
-    static uint8_t len_;
-    static uint32_t last_time_;
-
-    static int16_t  left_set_speed_;
-    static int16_t  right_set_speed_;
     static int16_t  left_real_speed_;
     static int16_t  right_real_speed_;
     static uint32_t left_counter_;
@@ -193,69 +104,28 @@ private:
 };
 
 template<
-    typename SpiMaster,
-    typename CePin
+    typename TwiMaster
     >
-uint8_t MotorsController<SpiMaster, CePin>::state_;
+uint8_t MotorsController<TwiMaster>::buffer_[8];
 
 template<
-    typename SpiMaster,
-    typename CePin
+    typename TwiMaster
     >
-uint8_t MotorsController<SpiMaster, CePin>::buffer_[16];
+int16_t MotorsController<TwiMaster>::left_real_speed_;
 
 template<
-    typename SpiMaster,
-    typename CePin
+    typename TwiMaster
     >
-uint8_t MotorsController<SpiMaster, CePin>::index_;
+int16_t MotorsController<TwiMaster>::right_real_speed_;
 
 template<
-    typename SpiMaster,
-    typename CePin
+    typename TwiMaster
     >
-uint8_t MotorsController<SpiMaster, CePin>::len_;
+uint32_t MotorsController<TwiMaster>::left_counter_;
 
 template<
-    typename SpiMaster,
-    typename CePin
+    typename TwiMaster
     >
-uint32_t MotorsController<SpiMaster, CePin>::last_time_;
-
-template<
-    typename SpiMaster,
-    typename CePin
-    >
-int16_t MotorsController<SpiMaster, CePin>::left_set_speed_;
-
-template<
-    typename SpiMaster,
-    typename CePin
-    >
-int16_t MotorsController<SpiMaster, CePin>::right_set_speed_;
-
-template<
-    typename SpiMaster,
-    typename CePin
-    >
-int16_t MotorsController<SpiMaster, CePin>::left_real_speed_;
-
-template<
-    typename SpiMaster,
-    typename CePin
-    >
-int16_t MotorsController<SpiMaster, CePin>::right_real_speed_;
-
-template<
-    typename SpiMaster,
-    typename CePin
-    >
-uint32_t MotorsController<SpiMaster, CePin>::left_counter_;
-
-template<
-    typename SpiMaster,
-    typename CePin
-    >
-uint32_t MotorsController<SpiMaster, CePin>::right_counter_;
+uint32_t MotorsController<TwiMaster>::right_counter_;
 
 #endif

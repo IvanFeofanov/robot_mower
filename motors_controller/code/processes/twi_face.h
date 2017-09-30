@@ -114,14 +114,18 @@ private:
 			MotorsController::real_rps(&left, &right);
 			left_real_speed_	= left;
 			right_real_speed_	= right;
-		}
+        }
 
         // counter
 		if(Interface::is_available(MCTF_REG_LEFT_COUNTER)){
 			left_counter_  = Odometers::left_counter();
-		}
+        }
+        
 		if(Interface::is_available(MCTF_REG_RIGHT_COUNTER)){
 			right_counter_ = Odometers::right_counter();
+            DDRB |= (1<<5);
+            PORTB ^= (1<<5);
+
 		}
     }
 

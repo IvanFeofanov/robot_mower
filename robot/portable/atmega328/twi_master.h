@@ -9,6 +9,8 @@
 
 #define TWI_FREQ (100000)
 
+typedef void (*TwiCallbackPtr)(void);
+
 class TwiMaster
 {
 public:
@@ -49,6 +51,8 @@ public:
         receive_buffer_         = 0;
         receive_buffer_size_    = 0;
         receive_buffer_index_   = 0;
+
+        handler_ptr_            = 0;
 
         // work_log_index_ = 0;
     }
@@ -98,6 +102,12 @@ public:
         send_start();
     }
 
+
+    static void attach_handler(TwiCallbackPtr function)
+    {
+        handler_ptr_ = function;
+    }
+
     static bool is_ready()
     {
         return status_ & 0xf0;
@@ -109,7 +119,7 @@ public:
 
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
-            tmp = transfer_buffer_index_ + 1;
+            tmp = receive_buffer_index_;
         }
 
         return tmp;
@@ -147,6 +157,12 @@ private:
         }
     }
 
+    static inline void call_handler()
+    {
+        if(handler_ptr_)
+            handler_ptr_();
+    }
+
 public:
     static inline void interrupt_handler()
     {
@@ -178,6 +194,7 @@ public:
                 reply(true);
             }else if(status_ == STATUS_TRANSFERRING){
                 status_ = STATUS_READY;
+                call_handler();
                 send_stop();
             }else if(status_ == STATUS_REQUESTING){
                 status_ = STATUS_RECEIVING;
@@ -187,16 +204,19 @@ public:
 
         case 0x20: //SLA+W NACK
             status_ = STATUS_TX_ADDR_NACK_ERR;
+            call_handler();
             send_stop();
             break;
 
         case 0x30: //байт был послан но получен NACK
             status_ = STATUS_TX_DATA_NACK_ERR;
+            call_handler();
             send_stop();
             break;
 
         case 0x38: //арбитраж был проигран
             status_ = STATUS_OTHER_MASTER_ERR;
+            call_handler();
             break;
 
         // Receiving
@@ -215,16 +235,19 @@ public:
             receive_buffer_[receive_buffer_index_] = TWDR;
             receive_buffer_index_++;
             status_ = STATUS_READY;
+            call_handler();
             send_stop();
             break;
 
         case 0x48: //SLA+R NACK
             status_ = STATUS_TX_ADDR_NACK_ERR;
+            call_handler();
             send_stop();
             break;
 
         default:
-            status_ = STATUS_OTHER_ERR;;
+            status_ = STATUS_OTHER_ERR;
+            call_handler();
         }
     }
 
@@ -244,6 +267,7 @@ private:
 
     volatile static uint8_t status_;
 
+    static TwiCallbackPtr handler_ptr_;
 };
 
 #endif

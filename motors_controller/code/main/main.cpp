@@ -13,12 +13,11 @@ extern "C"
 #include "portable/atmega88pa/motors.h"
 #include "portable/atmega88pa/odometers.h"
 #include "portable/atmega88pa/pio.h"
-#include "portable/atmega88pa/spi.h"
 #include "portable/atmega88pa/twi_slave.h"
 
 // automats
 #include "processes/motors_controller.h"
-#include "processes/twi_face.h" 
+#include "processes/twi_face.h"
 
 // debug
 

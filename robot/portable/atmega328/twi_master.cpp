@@ -12,6 +12,8 @@ extern uint16_t       TwiMaster::receive_buffer_index_;
 
 extern volatile uint8_t TwiMaster::status_;
 
+extern TwiCallbackPtr   TwiMaster::handler_ptr_;
+
 // extern volatile uint8_t TwiMaster::work_log_[20];
 // extern volatile uint8_t TwiMaster::work_log_index_;
 

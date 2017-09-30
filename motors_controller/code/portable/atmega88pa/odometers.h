@@ -59,7 +59,7 @@ public:
         return tmp;
     }
 
-    static void reset_right_counter()
+    static void reset_left_counter()
     {
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
@@ -67,7 +67,7 @@ public:
         }
     }
 
-    static void reset_left_counter()
+    static void reset_right_counter()
     {
         ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
         {
@@ -121,7 +121,7 @@ public:
         static uint8_t n = 0;
 
         n++;
-        if(n == INTERRUPTS_PER_ROTATION){
+        if(n >= INTERRUPTS_PER_ROTATION){
             left_counter_++;
             n = 0;
         }
@@ -145,7 +145,7 @@ public:
         static uint8_t n = 0;
 
         n++;
-        if(n == INTERRUPTS_PER_ROTATION){
+        if(n >= INTERRUPTS_PER_ROTATION){
             right_counter_++;
             n = 0;
         }
